@@ -137,6 +137,56 @@
         flex-shrink: 0;
       }
 
+      /* ── PASSWORD SCREEN ── */
+      #pw-screen {
+        position: fixed;
+        inset: 0;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 24px;
+      }
+
+      .pw-input {
+        width: 100%;
+        padding: 16px;
+        border-radius: var(--r);
+        border: 1.5px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        font-size: 16px;
+        margin-bottom: 12px;
+        box-sizing: border-box;
+        outline: none;
+      }
+
+      .pw-btn {
+        width: 100%;
+        padding: 16px 20px;
+        border-radius: var(--r);
+        border: none;
+        background: var(--accent);
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .pw-btn:active {
+        opacity: 0.75;
+      }
+
+      .pw-error {
+        font-size: 14px;
+        color: var(--warn);
+        min-height: 20px;
+        margin-top: 10px;
+      }
+
       /* ── LOADING ── */
       #loading {
         position: fixed;
@@ -790,6 +840,23 @@
   </head>
   <body>
     <!-- ── AUTH SCREEN ── -->
+    <div id="pw-screen">
+      <div class="auth-card">
+        <div class="auth-icon">💪</div>
+        <h1 class="auth-title">Workout Tracker</h1>
+        <p class="auth-sub">Enter the password to continue.</p>
+        <input
+          class="pw-input"
+          type="password"
+          id="pw-input"
+          placeholder="Password"
+          onkeydown="if(event.key==='Enter')checkPw()"
+        />
+        <button class="pw-btn" onclick="checkPw()">Continue</button>
+        <p class="pw-error" id="pw-error"></p>
+      </div>
+    </div>
+
     <div id="auth-screen">
       <div class="auth-card">
         <div class="auth-icon">💪</div>
@@ -872,6 +939,24 @@
     </div>
 
     <script>
+      // ── PASSWORD GATE ────────────────────────────────────────────────────────────
+
+      const PW_KEY = "wt_unlocked";
+
+      function checkPw() {
+        const val = document.getElementById("pw-input").value;
+        if (val === "Linked9-Declared-Curfew") {
+          localStorage.setItem(PW_KEY, "1");
+          document.getElementById("pw-screen").style.display = "none";
+        } else {
+          document.getElementById("pw-error").textContent = "Incorrect password.";
+        }
+      }
+
+      if (localStorage.getItem(PW_KEY)) {
+        document.getElementById("pw-screen").style.display = "none";
+      }
+
       // ── FIREBASE ──────────────────────────────────────────────────────────────────
 
       const firebaseConfig = {
