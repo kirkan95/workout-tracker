@@ -1,0 +1,20 @@
+.completeBtn {
+  width: 100%;
+  padding: 18px;
+  border-radius: var(--r);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 8px;
+  letter-spacing: -0.2px;
+  transition: opacity 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 56px;
+}
+
+.completeBtn:disabled { opacity: 0.6; }
+.completeBtn:active:not(:disabled) { transform: scale(0.98); opacity: 0.88; }
+.completeBtn.saved { background: var(--success); }

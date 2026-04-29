@@ -1,0 +1,60 @@
+.hItem {
+  background: var(--surface);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hHead {
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hDate { font-size: 16px; font-weight: 700; }
+.hType { font-size: 13px; color: var(--text3); margin-top: 2px; font-weight: 500; }
+
+.hChevron {
+  color: var(--text3);
+  font-size: 20px;
+  font-weight: 300;
+  transition: transform 0.2s;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.open .hChevron { transform: rotate(90deg); }
+
+.hBody {
+  border-top: 1px solid var(--border);
+  padding: 16px;
+}
+
+.hEx          { margin-bottom: 14px; }
+.hEx:last-child { margin-bottom: 0; }
+.hExName      { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+
+.hSet {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text2);
+  padding: 3px 0;
+}
+
+.hSetLbl { color: var(--text3); font-weight: 600; width: 44px; flex-shrink: 0; }
+
+.empty {
+  text-align: center;
+  padding: 64px 20px;
+  color: var(--text3);
+}
+
+.emptyIco { font-size: 44px; margin-bottom: 12px; }
+.empty p  { font-size: 15px; line-height: 1.5; }
+
+.noDetail { font-size: 14px; color: var(--text3); }

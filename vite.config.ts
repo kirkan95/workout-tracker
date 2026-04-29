@@ -1,0 +1,33 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  base: '/workout-tracker/',
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: 'Workout Tracker',
+        short_name: 'Workout',
+        start_url: '/workout-tracker/',
+        display: 'standalone',
+        background_color: '#000000',
+        theme_color: '#6C63FF',
+        icons: [
+          {
+            src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%236C63FF'/%3E%3Ctext x='50%25' y='68%25' font-size='110' text-anchor='middle' dominant-baseline='middle'%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E",
+            sizes: '192x192',
+            type: 'image/svg+xml',
+          },
+          {
+            src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%236C63FF'/%3E%3Ctext x='50%25' y='68%25' font-size='300' text-anchor='middle' dominant-baseline='middle'%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E",
+            sizes: '512x512',
+            type: 'image/svg+xml',
+          },
+        ],
+      },
+    }),
+  ],
+})

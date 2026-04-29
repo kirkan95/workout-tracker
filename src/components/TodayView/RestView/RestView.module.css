@@ -1,0 +1,11 @@
+.card {
+  background: var(--surface);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.icon  { font-size: 52px; margin-bottom: 14px; }
+.title { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+.sub   { font-size: 15px; color: var(--text3); }
