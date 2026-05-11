@@ -3,9 +3,12 @@
 // value typed as an interface has exactly those fields. It's a compile-time
 // contract — no runtime overhead.
 
+import type { Equipment } from '../data/exercises'
+
 export interface SetData {
   weight: number | null  // "number | null" is a union type — the value is either a number OR null
   reps: number | null
+  feel?: 'easy' | 'medium' | 'hard'
 }
 
 export interface ExerciseLog {
@@ -25,8 +28,9 @@ export interface WorkoutSession {
 
 export interface CardioData {
   type: 'run' | 'elliptical'
-  duration: string
+  duration: number  // minutes
   notes: string
+  feel?: 'easy' | 'medium' | 'hard'
 }
 
 export interface ExerciseDefinition {
@@ -45,6 +49,36 @@ export interface DaySchedule {
   name: string
   sub: string
   exercises?: ExerciseDefinition[]
+}
+
+export interface UserSettings {
+  goal: 'stronger' | 'muscle' | 'loseweight' | 'stayfit'
+  startDay: number          // 0–6, Sunday = 0
+  restDays: number[]
+  equipment: Equipment[]
+  exclusions: string[]      // movement type keys
+  mesocycleStart: string    // ISO date of first session
+  timerAlert: 'sound' | 'silent'
+  workoutDuration: number   // minutes
+}
+
+export interface ExerciseTarget {
+  sets: number
+  repRange: string          // e.g. "8-12"
+  weight: number | null
+}
+
+export interface DayPlan {
+  type: 'push' | 'pull' | 'legs' | 'fullbody' | 'cardio' | 'rest'
+  exercises?: Record<string, ExerciseTarget>
+}
+
+export interface WeeklyPlan {
+  weekStartDate: string
+  settingsHash: string
+  status: 'ok' | 'error'
+  durationConflict?: boolean
+  schedule: Record<string, DayPlan>
 }
 
 // ── TYPESCRIPT CONCEPT: Type aliases ─────────────────────────────────────────

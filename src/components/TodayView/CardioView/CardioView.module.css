@@ -60,7 +60,30 @@
 }
 
 .fieldInput:focus { border-color: var(--accent); }
-.fieldInput:last-of-type { margin-bottom: 0; }
+
+.feelRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.feelBtn {
+  flex: 1;
+  padding: 12px 4px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text3);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.feelBtn.easy   { border-color: var(--success); background: var(--success-dim); color: var(--success); }
+.feelBtn.medium { border-color: var(--warn);    background: rgba(255,159,10,.12); color: var(--warn); }
+.feelBtn.hard   { border-color: #ff3b30;        background: rgba(255,59,48,.10); color: #ff3b30; }
 
 .completeBtn {
   width: 100%;

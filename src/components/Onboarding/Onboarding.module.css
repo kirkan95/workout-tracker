@@ -1,0 +1,206 @@
+.screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 999;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+}
+
+.progressBar {
+  height: 3px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 36px 20px 24px;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.sub {
+  font-size: 15px;
+  color: var(--text3);
+  margin-bottom: 28px;
+}
+
+.body {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--text2);
+  margin-top: 12px;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--text3);
+  margin-top: 16px;
+}
+
+/* Goal cards */
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.goalCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-radius: var(--r);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  width: 100%;
+}
+
+.goalCard.selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.goalLabel {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.goalSub {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+.goalCard.selected .goalLabel {
+  color: var(--accent);
+}
+
+/* Chips */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  padding: 10px 16px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chip.selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* Day row */
+
+.dayRow {
+  display: flex;
+  gap: 6px;
+}
+
+.dayBtn {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayBtn.selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* Footer */
+
+.footer {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.backBtn {
+  padding: 0 20px;
+  height: 52px;
+  border-radius: var(--r);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.nextBtn {
+  flex: 1;
+  height: 52px;
+  border-radius: var(--r);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nextBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}

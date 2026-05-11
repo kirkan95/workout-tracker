@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import { DaySchedule, FormData, WorkoutSession } from '../../../types'
+import { DaySchedule, FormData, WorkoutSession, ExerciseTarget } from '../../../types'
 import ExerciseCard from './ExerciseCard/ExerciseCard'
+import WarmupBanner from '../../WarmupBanner/WarmupBanner'
 import styles from './StrengthView.module.css'
+
+type Feel = 'easy' | 'medium' | 'hard'
 
 interface Props {
   day: DaySchedule
@@ -9,15 +12,16 @@ interface Props {
   setFd: React.Dispatch<React.SetStateAction<FormData>>
   completed: boolean
   prevSession: WorkoutSession | null
+  feelData: Record<string, Record<number, Feel>>
+  aiTargets: Record<string, ExerciseTarget>
   onComplete: () => Promise<void>
+  onFeelChange: (exId: string, setIdx: number, feel: Feel) => void
+  onTimerStart: () => void
 }
 
-export default function StrengthView({ day, fd, setFd, completed, prevSession, onComplete }: Props) {
+export default function StrengthView({ day, fd, setFd, completed, prevSession, feelData, aiTargets, onComplete, onFeelChange, onTimerStart }: Props) {
   const [saving, setSaving] = useState(false)
 
-  // ── TYPESCRIPT CONCEPT: Literal types as function parameters ─────────────
-  // "field: 'weight' | 'reps'" means this function only accepts exactly those
-  // two strings. Passing any other string is a compile-time error.
   const handleChange = (exId: string, setIdx: number, field: 'weight' | 'reps', value: string) => {
     setFd((prev) => ({
       ...prev,
@@ -40,13 +44,19 @@ export default function StrengthView({ day, fd, setFd, completed, prevSession, o
       <div className="pg-sub">{day.sub}</div>
       {completed && <div className="done-badge">✓ Workout Logged</div>}
 
+      <WarmupBanner workoutId={day.id} />
+
       {day.exercises?.map((ex) => (
         <ExerciseCard
           key={ex.id}
           ex={ex}
           setData={fd[ex.id] ?? {}}
           prevSession={prevSession}
+          feel={feelData[ex.id] ?? {}}
+          aiTarget={aiTargets[ex.id]}
           onChange={(setIdx, field, value) => handleChange(ex.id, setIdx, field, value)}
+          onFeelChange={(setIdx, feel) => onFeelChange(ex.id, setIdx, feel)}
+          onTimerStart={onTimerStart}
         />
       ))}
 

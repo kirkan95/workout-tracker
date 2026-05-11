@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { DaySchedule, CardioData } from '../../../types'
+import WarmupBanner from '../../WarmupBanner/WarmupBanner'
 import styles from './CardioView.module.css'
+
+const FEEL_LABELS = ['Easy', 'Medium', 'Hard'] as const
+type Feel = 'easy' | 'medium' | 'hard'
+const FEEL_KEYS: Feel[] = ['easy', 'medium', 'hard']
 
 interface Props {
   day: DaySchedule
@@ -25,6 +30,8 @@ export default function CardioView({ day, cd, setCd, completed, onComplete }: Pr
       <div className="pg-sub">{day.sub}</div>
       {completed && <div className="done-badge">✓ Workout Logged</div>}
 
+      <WarmupBanner workoutId={day.id} />
+
       <div className={styles.card}>
         <div className={styles.fieldLbl}>Activity</div>
         <div className={styles.typeRow}>
@@ -32,13 +39,13 @@ export default function CardioView({ day, cd, setCd, completed, onComplete }: Pr
             className={`${styles.typeBtn} ${cd.type === 'run' ? styles.active : ''}`}
             onClick={() => setCd((p) => ({ ...p, type: 'run' }))}
           >
-            🏃 Run
+            Run
           </button>
           <button
             className={`${styles.typeBtn} ${cd.type === 'elliptical' ? styles.active : ''}`}
             onClick={() => setCd((p) => ({ ...p, type: 'elliptical' }))}
           >
-            🔄 Elliptical
+            Elliptical
           </button>
         </div>
 
@@ -48,15 +55,28 @@ export default function CardioView({ day, cd, setCd, completed, onComplete }: Pr
           type="number"
           inputMode="numeric"
           placeholder="30"
-          value={cd.duration}
-          onChange={(e) => setCd((p) => ({ ...p, duration: e.target.value }))}
+          value={cd.duration === 0 ? '' : String(cd.duration)}
+          onChange={(e) => setCd((p) => ({ ...p, duration: e.target.value ? parseInt(e.target.value) : 0 }))}
         />
+
+        <div className={styles.fieldLbl}>How did it feel?</div>
+        <div className={styles.feelRow}>
+          {FEEL_KEYS.map((key, i) => (
+            <button
+              key={key}
+              className={`${styles.feelBtn} ${cd.feel === key ? styles[key] : ''}`}
+              onClick={() => setCd((p) => ({ ...p, feel: key }))}
+            >
+              {FEEL_LABELS[i]}
+            </button>
+          ))}
+        </div>
 
         <div className={styles.fieldLbl}>Notes</div>
         <input
           className={styles.fieldInput}
           type="text"
-          placeholder="How did it feel?"
+          placeholder="Optional"
           value={cd.notes}
           onChange={(e) => setCd((p) => ({ ...p, notes: e.target.value }))}
         />
