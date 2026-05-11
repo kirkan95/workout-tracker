@@ -14,12 +14,15 @@ interface Props {
   prevSession: WorkoutSession | null
   feelData: Record<string, Record<number, Feel>>
   aiTargets: Record<string, ExerciseTarget>
+  configured: number
+  timerRunning: boolean
   onComplete: () => Promise<void>
   onFeelChange: (exId: string, setIdx: number, feel: Feel) => void
   onTimerStart: () => void
+  onAdjust: (delta: number) => void
 }
 
-export default function StrengthView({ day, fd, setFd, completed, prevSession, feelData, aiTargets, onComplete, onFeelChange, onTimerStart }: Props) {
+export default function StrengthView({ day, fd, setFd, completed, prevSession, feelData, aiTargets, configured, timerRunning, onComplete, onFeelChange, onTimerStart, onAdjust }: Props) {
   const [saving, setSaving] = useState(false)
 
   const handleChange = (exId: string, setIdx: number, field: 'weight' | 'reps', value: string) => {
@@ -54,11 +57,15 @@ export default function StrengthView({ day, fd, setFd, completed, prevSession, f
           prevSession={prevSession}
           feel={feelData[ex.id] ?? {}}
           aiTarget={aiTargets[ex.id]}
+          configured={configured}
           onChange={(setIdx, field, value) => handleChange(ex.id, setIdx, field, value)}
           onFeelChange={(setIdx, feel) => onFeelChange(ex.id, setIdx, feel)}
           onTimerStart={onTimerStart}
+          onAdjust={onAdjust}
         />
       ))}
+
+      {timerRunning && <div style={{ height: 56 }} />}
 
       <button
         className={`${styles.completeBtn} ${completed ? styles.saved : ''}`}

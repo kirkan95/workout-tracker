@@ -50,7 +50,7 @@ export function useRestTimer(defaultSeconds: number, silent: boolean) {
   const stop = () => setRunning(false)
 
   const adjust = (delta: number) => {
-    const next = Math.max(10, configuredRef.current + delta)
+    const next = Math.max(5, configuredRef.current + delta)
     configuredRef.current = next
     setConfigured(next)
     setSeconds((s) => Math.max(1, s + delta))

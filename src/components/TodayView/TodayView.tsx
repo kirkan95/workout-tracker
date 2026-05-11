@@ -107,18 +107,17 @@ export default function TodayView({ fd, setFd, cd, setCd, settings, plan, planGe
         prevSession={prev}
         feelData={feelData}
         aiTargets={aiTargets}
+        configured={timer.configured}
+        timerRunning={timer.running}
         onComplete={async () => { await onComplete(buildStrengthSession()) }}
         onFeelChange={handleFeelChange}
         onTimerStart={timer.start}
+        onAdjust={timer.adjust}
       />
       <RestTimer
         seconds={timer.seconds}
-        configured={timer.configured}
         running={timer.running}
-        onStart={timer.start}
         onStop={timer.stop}
-        onAdjust={timer.adjust}
-        onSetAll={() => timer.setAll(timer.configured)}
       />
     </>
   )

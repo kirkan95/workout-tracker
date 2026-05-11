@@ -118,6 +118,13 @@
 
 .setInput:focus { border-color: var(--accent); }
 
+.timerGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .timerBtn {
   width: 36px;
   height: 36px;
@@ -136,6 +143,59 @@
 }
 
 .timerBtn:active { border-color: var(--accent); background: var(--accent-dim); }
+
+.menuBtn {
+  width: 24px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: var(--text3);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0.5;
+  padding-bottom: 2px;
+}
+
+.menuBtnActive {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.timerPanel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--accent-dim);
+  border-top: 1px solid rgba(108, 99, 255, 0.15);
+}
+
+.tpBtn {
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid rgba(108, 99, 255, 0.3);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tpTime {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+  min-width: 44px;
+  text-align: center;
+}
 
 .feelRow {
   display: flex;

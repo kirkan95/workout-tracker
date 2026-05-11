@@ -2,12 +2,8 @@ import styles from './RestTimer.module.css'
 
 interface Props {
   seconds: number
-  configured: number
   running: boolean
-  onStart: () => void
   onStop: () => void
-  onAdjust: (delta: number) => void
-  onSetAll: () => void
 }
 
 function fmt(s: number): string {
@@ -16,22 +12,12 @@ function fmt(s: number): string {
   return `${m}:${String(r).padStart(2, '0')}`
 }
 
-export default function RestTimer({ seconds, configured, running, onStart, onStop, onAdjust, onSetAll }: Props) {
+export default function RestTimer({ seconds, running, onStop }: Props) {
+  if (!running) return null
   return (
-    <div className={`${styles.bar} ${running ? styles.active : ''}`}>
-      <div className={styles.left}>
-        <span className={styles.time}>{fmt(seconds)}</span>
-        <button className={styles.adjustBtn} onClick={() => onAdjust(-10)}>−10s</button>
-        <button className={styles.adjustBtn} onClick={() => onAdjust(+10)}>+10s</button>
-      </div>
-      <div className={styles.right}>
-        <button className={styles.setAll} onClick={onSetAll}>
-          {fmt(configured)} for all
-        </button>
-        <button className={styles.startStop} onClick={running ? onStop : onStart}>
-          {running ? '⏸' : '▶'}
-        </button>
-      </div>
+    <div className={styles.pill}>
+      <span className={styles.time}>{fmt(seconds)}</span>
+      <button className={styles.stopBtn} onClick={onStop} aria-label="Stop timer">⏹</button>
     </div>
   )
 }

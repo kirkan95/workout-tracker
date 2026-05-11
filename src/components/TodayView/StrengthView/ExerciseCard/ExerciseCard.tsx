@@ -11,19 +11,28 @@ const FEEL_LABELS: { key: Feel; label: string }[] = [
   { key: 'hard',   label: 'Hard' },
 ]
 
+function fmt(s: number): string {
+  const m = Math.floor(s / 60)
+  const r = s % 60
+  return `${m}:${String(r).padStart(2, '0')}`
+}
+
 interface Props {
   ex: ExerciseDefinition
   setData: Record<number, { weight: string; reps: string }>
   prevSession: WorkoutSession | null
   feel: Record<number, Feel>
   aiTarget?: { repRange: string; weight: number | null }
+  configured: number
   onChange: (setIdx: number, field: 'weight' | 'reps', value: string) => void
   onFeelChange: (setIdx: number, feel: Feel) => void
   onTimerStart: () => void
+  onAdjust: (delta: number) => void
 }
 
-export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget, onChange, onFeelChange, onTimerStart }: Props) {
+export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget, configured, onChange, onFeelChange, onTimerStart, onAdjust }: Props) {
   const [tipOpen, setTipOpen] = useState(false)
+  const [openMenuSet, setOpenMenuSet] = useState<number | null>(null)
   const tip = TIPS[ex.id]
   const label = aiTarget ? `${ex.sets} × ${aiTarget.repRange}` : `${ex.sets} × ${ex.target}`
 
@@ -62,6 +71,7 @@ export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget,
                        : prevSet?.reps    != null ? String(prevSet.reps)   : ex.target
 
           const filled = ex.wt ? !!fd.weight : !!fd.reps
+          const menuOpen = openMenuSet === s
 
           return (
             <div key={s} className={styles.setBlock}>
@@ -93,10 +103,31 @@ export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget,
                     />
                   </div>
                 </div>
-                <button className={styles.timerBtn} onClick={onTimerStart} aria-label="Start rest timer">
-                  ⏱
-                </button>
+                <div className={styles.timerGroup}>
+                  <button
+                    className={styles.timerBtn}
+                    onClick={() => { onTimerStart(); setOpenMenuSet(null) }}
+                    aria-label="Start rest timer"
+                  >
+                    ⏱
+                  </button>
+                  <button
+                    className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnActive : ''}`}
+                    onClick={() => setOpenMenuSet(menuOpen ? null : s)}
+                    aria-label="Timer settings"
+                  >
+                    ⋮
+                  </button>
+                </div>
               </div>
+
+              {menuOpen && (
+                <div className={styles.timerPanel}>
+                  <button className={styles.tpBtn} onClick={() => onAdjust(-5)}>−5s</button>
+                  <span className={styles.tpTime}>{fmt(configured)}</span>
+                  <button className={styles.tpBtn} onClick={() => onAdjust(+5)}>+5s</button>
+                </div>
+              )}
 
               {filled && (
                 <div className={styles.feelRow}>
