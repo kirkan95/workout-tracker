@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ExerciseDefinition, WorkoutSession } from '../../../../types'
-import { TIPS } from '../../../../data/tips'
+import { EXERCISES } from '../../../../data/exercises'
 import styles from './ExerciseCard.module.css'
 
 type Feel = 'easy' | 'medium' | 'hard'
@@ -24,17 +24,20 @@ interface Props {
   feel: Record<number, Feel>
   aiTarget?: { repRange: string; weight: number | null }
   configured: number
+  timerRunning: boolean
   onChange: (setIdx: number, field: 'weight' | 'reps', value: string) => void
   onFeelChange: (setIdx: number, feel: Feel) => void
   onTimerStart: () => void
   onAdjust: (delta: number) => void
 }
 
-export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget, configured, onChange, onFeelChange, onTimerStart, onAdjust }: Props) {
+export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget, configured, timerRunning, onChange, onFeelChange, onTimerStart, onAdjust }: Props) {
   const [tipOpen, setTipOpen] = useState(false)
   const [openMenuSet, setOpenMenuSet] = useState<number | null>(null)
-  const tip = TIPS[ex.id]
+  const libEx = EXERCISES.find((e) => e.id === ex.id)
   const label = aiTarget ? `${ex.sets} × ${aiTarget.repRange}` : `${ex.sets} × ${ex.target}`
+  const primaryMuscle = libEx?.muscles[0]
+  const secondaryMuscles = libEx && libEx.muscles.length > 1 ? libEx.muscles.slice(1) : []
 
   return (
     <div className={styles.card}>
@@ -42,7 +45,7 @@ export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget,
         <div>
           <div className={styles.nameRow}>
             <span className={styles.name}>{ex.name}</span>
-            {tip && (
+            {libEx?.description && (
               <button
                 className={`${styles.tipBtn} ${tipOpen ? styles.tipBtnActive : ''}`}
                 onClick={() => setTipOpen((o) => !o)}
@@ -53,11 +56,12 @@ export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget,
             )}
           </div>
           {ex.note && <div className={styles.note}>{ex.note}</div>}
+          {primaryMuscle && <div className={styles.muscles}>{primaryMuscle}{secondaryMuscles.length > 0 ? ` · ${secondaryMuscles.join(' · ')}` : ''}</div>}
         </div>
         <div className={styles.target}>{label}</div>
       </div>
 
-      {tip && tipOpen && <div className={styles.tip}>{tip}</div>}
+      {libEx?.description && tipOpen && <div className={styles.tip}>{libEx.description}</div>}
 
       <div className={styles.setsWrap}>
         {Array.from({ length: ex.sets }, (_, s) => {
@@ -66,7 +70,7 @@ export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget,
           const unit = ex.time ? 'Sec' : 'Reps'
 
           const wtPH   = aiTarget?.weight != null ? String(aiTarget.weight)
-                       : prevSet?.weight  != null ? String(prevSet.weight) : '—'
+                       : prevSet?.weight  != null ? String(prevSet.weight) : ''
           const repsPH = aiTarget         ? aiTarget.repRange
                        : prevSet?.reps    != null ? String(prevSet.reps)   : ex.target
 
@@ -105,7 +109,7 @@ export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget,
                 </div>
                 <div className={styles.timerGroup}>
                   <button
-                    className={styles.timerBtn}
+                    className={`${styles.timerBtn} ${timerRunning ? styles.timerBtnRunning : ''}`}
                     onClick={() => { onTimerStart(); setOpenMenuSet(null) }}
                     aria-label="Start rest timer"
                   >

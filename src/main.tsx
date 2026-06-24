@@ -4,9 +4,12 @@ import './index.css'
 import App from './App'
 
 const setVh = () => {
-  document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
+  const h = window.visualViewport?.height ?? window.innerHeight
+  document.documentElement.style.setProperty('--app-height', `${h}px`)
 }
 window.addEventListener('resize', setVh)
+window.addEventListener('orientationchange', () => setTimeout(setVh, 200))
+window.visualViewport?.addEventListener('resize', setVh)
 setVh()
 
 // ── TYPESCRIPT CONCEPT: Non-null assertion (!) ────────────────────────────────

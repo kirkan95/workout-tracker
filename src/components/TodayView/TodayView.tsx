@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { SCHED } from '../../data/schedule'
+import { getSchedule } from '../../data/schedule'
 import { FormData, CardioData, WorkoutSession, UserSettings, WeeklyPlan, ExerciseTarget } from '../../types'
 import { todayStr } from '../../utils'
 import { useRestTimer } from '../../hooks/useRestTimer'
@@ -48,8 +48,8 @@ export default function TodayView({ fd, setFd, cd, setCd, settings, plan, planGe
 
   const planDay = plan?.schedule[today]
 
-  // Use plan type to override day type, fall back to SCHED
-  const schedDay = SCHED[dow]
+  // Use plan type to override day type, fall back to schedule for current week variant
+  const schedDay = getSchedule()[dow]
   const dayType = planDay?.type === 'cardio' ? 'cardio'
                 : planDay?.type === 'rest'   ? 'rest'
                 : planDay                    ? 'strength'
@@ -67,11 +67,14 @@ export default function TodayView({ fd, setFd, cd, setCd, settings, plan, planGe
     const exercises: WorkoutSession['exercises'] = {}
     day.exercises?.forEach((ex) => {
       exercises[ex.id] = {
-        sets: Array.from({ length: ex.sets }, (_, s) => ({
-          weight: fd[ex.id]?.[s]?.weight ? parseFloat(fd[ex.id][s].weight) : null,
-          reps:   fd[ex.id]?.[s]?.reps   ? (ex.time ? parseFloat(fd[ex.id][s].reps) : parseInt(fd[ex.id][s].reps)) : null,
-          feel:   feelData[ex.id]?.[s],
-        })),
+        sets: Array.from({ length: ex.sets }, (_, s) => {
+          const feel = feelData[ex.id]?.[s]
+          return {
+            weight: fd[ex.id]?.[s]?.weight ? parseFloat(fd[ex.id][s].weight) : null,
+            reps:   fd[ex.id]?.[s]?.reps   ? (ex.time ? parseFloat(fd[ex.id][s].reps) : parseInt(fd[ex.id][s].reps)) : null,
+            ...(feel ? { feel } : {}),
+          }
+        }),
       }
     })
     return { date: today, dayOfWeek: dow, type: 'strength', workoutId: day.id, completed: true, timestamp: Date.now(), exercises }
@@ -83,6 +86,7 @@ export default function TodayView({ fd, setFd, cd, setCd, settings, plan, planGe
     return (
       <>
         {planGenerating && <div style={{ padding: '8px 0 12px', fontSize: 13, color: 'var(--text3)' }}>Generating your plan…</div>}
+        {planDay?.note && <div style={{ padding: '0 0 14px', fontSize: 13, color: 'var(--text2)', lineHeight: 1.5 }}>{planDay.note}</div>}
         <CardioView
           day={day}
           cd={cd}
@@ -99,6 +103,7 @@ export default function TodayView({ fd, setFd, cd, setCd, settings, plan, planGe
   return (
     <>
       {planGenerating && <div style={{ padding: '8px 0 12px', fontSize: 13, color: 'var(--text3)' }}>Generating your plan…</div>}
+      {planDay?.note && <div style={{ padding: '0 0 14px', fontSize: 13, color: 'var(--text2)', lineHeight: 1.5 }}>{planDay.note}</div>}
       <StrengthView
         day={day}
         fd={fd}

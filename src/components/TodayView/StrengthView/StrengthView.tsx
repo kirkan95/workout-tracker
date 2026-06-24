@@ -58,6 +58,7 @@ export default function StrengthView({ day, fd, setFd, completed, prevSession, f
           feel={feelData[ex.id] ?? {}}
           aiTarget={aiTargets[ex.id]}
           configured={configured}
+          timerRunning={timerRunning}
           onChange={(setIdx, field, value) => handleChange(ex.id, setIdx, field, value)}
           onFeelChange={(setIdx, feel) => onFeelChange(ex.id, setIdx, feel)}
           onTimerStart={onTimerStart}

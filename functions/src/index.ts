@@ -33,6 +33,7 @@ interface DayPlan {
   exercises?: Record<string, ExerciseTarget>
   cardioDuration?: number
   cardioEffort?: string
+  note?: string
 }
 
 interface WeeklyPlan {
@@ -70,6 +71,7 @@ function transformAIResponse(
       exercises?: Array<{ id: string; sets: number; repRange: string; weight?: number }>
       cardioDuration?: number
       cardioEffort?: string
+      note?: string
     }>
     durationConflict: boolean
   },
@@ -94,6 +96,7 @@ function transformAIResponse(
 
     if (day.cardioDuration) plan.cardioDuration = day.cardioDuration
     if (day.cardioEffort)   plan.cardioEffort   = day.cardioEffort
+    if (day.note)           plan.note           = day.note
 
     schedule[day.date] = plan
   }

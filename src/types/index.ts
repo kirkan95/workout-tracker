@@ -71,6 +71,7 @@ export interface ExerciseTarget {
 export interface DayPlan {
   type: 'push' | 'pull' | 'legs' | 'fullbody' | 'cardio' | 'rest'
   exercises?: Record<string, ExerciseTarget>
+  note?: string
 }
 
 export interface WeeklyPlan {

@@ -33,6 +33,7 @@ function makeClient(apiKey: string) {
                 },
                 cardioDuration: { type: SchemaType.INTEGER },
                 cardioEffort:   { type: SchemaType.STRING },
+                note:           { type: SchemaType.STRING },
               },
               required: ['date', 'type'],
             },

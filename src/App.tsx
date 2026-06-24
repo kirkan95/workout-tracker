@@ -13,8 +13,7 @@ import BottomNav, { Tab } from './components/BottomNav/BottomNav'
 import TodayView from './components/TodayView/TodayView'
 import HistoryView from './components/HistoryView/HistoryView'
 import SettingsView from './components/SettingsView/SettingsView'
-import SaunaBanner from './components/SaunaBanner/SaunaBanner'
-import { SCHED } from './data/schedule'
+import { getSchedule } from './data/schedule'
 import { todayStr, getWeekStartDate } from './utils'
 import { FormData, CardioData, UserSettings } from './types'
 import { app } from './lib/firebase'
@@ -27,8 +26,7 @@ export default function App() {
   // would run on every render (harmless here, but a good habit for expensive reads).
   const [unlocked, setUnlocked] = useState(() => !!localStorage.getItem(PW_KEY))
   const [activeTab, setActiveTab] = useState<Tab>('today')
-  const [showSauna, setShowSauna] = useState(false)
-  const [fd, setFd] = useState<FormData>({})
+const [fd, setFd] = useState<FormData>({})
   const [cd, setCd] = useState<CardioData>({ type: 'run', duration: 0, notes: '' })
 
   const [planGenerating, setPlanGenerating] = useState(false)
@@ -87,8 +85,9 @@ const handleSaveSettings = useCallback(async (newSettings: UserSettings) => {
   // Initialize form inputs from today's cached session once sessions are loaded
   useEffect(() => {
     if (!sessionsLoaded) return
-    const dow = new Date().getDay()
-    const day = SCHED[dow]
+    const now = new Date()
+    const dow = now.getDay()
+    const day = getSchedule(now)[dow]
     const existing = getSession(todayStr())
 
     if (day?.type === 'strength' && day.exercises) {
@@ -145,7 +144,6 @@ const handleSaveSettings = useCallback(async (newSettings: UserSettings) => {
             getPrevSession={getPrevSession}
             onComplete={async (session) => {
               await saveSession(session)
-              setShowSauna(true)
             }}
           />
         ) : activeTab === 'history' ? (
@@ -158,8 +156,7 @@ const handleSaveSettings = useCallback(async (newSettings: UserSettings) => {
           />
         )}
       </main>
-      {showSauna && <SaunaBanner onDismiss={() => setShowSauna(false)} />}
-      <BottomNav activeTab={activeTab} onSwitch={setActiveTab} />
+<BottomNav activeTab={activeTab} onSwitch={setActiveTab} />
     </div>
   )
 }

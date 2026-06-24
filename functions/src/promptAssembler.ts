@@ -78,6 +78,7 @@ For each day, output:
 - exercises (array, strength days only): exercise id, sets, repRange (e.g. "8-12"), weight in lbs (null if bodyweight)
 - cardioDuration (integer minutes, cardio days only)
 - cardioEffort (easy / medium / hard, cardio days only)
+- note (workout days only, omit for rest days): 1-2 sentences explaining what muscle groups or movements are being targeted that day and why, given the user's training history and progression stage
 
 Apply all trainer rules above, including return-from-break adjustments if the last session date indicates a gap.`)
 

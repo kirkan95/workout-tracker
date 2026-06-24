@@ -1,8 +1,24 @@
 import { useState, useEffect, useRef } from 'react'
 
+let sharedCtx: AudioContext | null = null
+
+function getCtx(): AudioContext | null {
+  if (!sharedCtx) {
+    try { sharedCtx = new AudioContext() } catch { return null }
+  }
+  return sharedCtx
+}
+
+function unlockCtx() {
+  const ctx = getCtx()
+  if (!ctx) return
+  if (ctx.state === 'suspended') ctx.resume()
+}
+
 function playAlert() {
   try {
-    const ctx = new AudioContext()
+    const ctx = getCtx()
+    if (!ctx || ctx.state === 'suspended') return
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.connect(gain)
@@ -43,6 +59,7 @@ export function useRestTimer(defaultSeconds: number, silent: boolean) {
   }, [running, silent])
 
   const start = () => {
+    if (!silent) unlockCtx()
     setSeconds(configuredRef.current)
     setRunning(true)
   }
