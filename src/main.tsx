@@ -1,7 +1,19 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 import App from './App'
+
+const updateSW = registerSW({
+  onRegisteredSW(_url, registration) {
+    // iOS PWAs only recheck the SW on relaunch by default — poll hourly so
+    // updates land while the app stays open too.
+    registration && setInterval(() => registration.update(), 60 * 60 * 1000)
+  },
+  onNeedRefresh() {
+    updateSW(true)
+  },
+})
 
 const setVh = () => {
   const h = window.visualViewport?.height ?? window.innerHeight
