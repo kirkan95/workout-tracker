@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 let sharedCtx: AudioContext | null = null
 
@@ -31,46 +31,71 @@ function playAlert() {
   } catch {}
 }
 
+// ── TYPESCRIPT CONCEPT: why timestamp math instead of a decrementing counter ──
+// iOS suspends JS timers (setInterval) when the screen locks or the PWA is
+// backgrounded — exactly when someone is resting between sets. A counter that
+// decrements once per tick just stops. Instead we store the wall-clock time
+// the rest period ENDS (`endsAt`) and always compute `remaining` as the
+// difference from `Date.now()`. Whether the interval ticked every second or
+// got frozen for two minutes, the math is correct the instant it runs again —
+// see UPGRADE.md §1.3.
 export function useRestTimer(defaultSeconds: number, silent: boolean) {
   const [running, setRunning] = useState(false)
   const [seconds, setSeconds] = useState(defaultSeconds)
   const [configured, setConfigured] = useState(defaultSeconds)
   const configuredRef = useRef(defaultSeconds)
+  const endsAtRef = useRef<number | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const tick = useCallback(() => {
+    if (endsAtRef.current == null) return
+    const remaining = Math.ceil((endsAtRef.current - Date.now()) / 1000)
+    if (remaining <= 0) {
+      setRunning(false)
+      setSeconds(configuredRef.current)
+      endsAtRef.current = null
+      if (!silent) playAlert()
+    } else {
+      setSeconds(remaining)
+    }
+  }, [silent])
 
   useEffect(() => {
     if (!running) {
       if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
       return
     }
-    intervalRef.current = setInterval(() => {
-      setSeconds((s) => {
-        if (s <= 1) {
-          setRunning(false)
-          if (!silent) playAlert()
-          return configuredRef.current
-        }
-        return s - 1
-      })
-    }, 1000)
+    intervalRef.current = setInterval(tick, 1000)
+    const onVisible = () => { if (document.visibilityState === 'visible') tick() }
+    document.addEventListener('visibilitychange', onVisible)
     return () => {
       if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
+      document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [running, silent])
+  }, [running, tick])
 
   const start = () => {
     if (!silent) unlockCtx()
+    endsAtRef.current = Date.now() + configuredRef.current * 1000
     setSeconds(configuredRef.current)
     setRunning(true)
   }
 
-  const stop = () => setRunning(false)
+  const stop = () => {
+    setRunning(false)
+    endsAtRef.current = null
+  }
 
   const adjust = (delta: number) => {
     const next = Math.max(5, configuredRef.current + delta)
     configuredRef.current = next
     setConfigured(next)
-    setSeconds((s) => Math.max(1, s + delta))
+    if (running && endsAtRef.current != null) {
+      endsAtRef.current += delta * 1000
+      setSeconds(Math.max(1, Math.ceil((endsAtRef.current - Date.now()) / 1000)))
+    } else {
+      setSeconds(next)
+    }
   }
 
   const setAll = (secs: number) => {

@@ -5,10 +5,12 @@
 
 import type { Equipment } from '../data/exercises'
 
+export type Feel = 'easy' | 'medium' | 'hard'
+
 export interface SetData {
   weight: number | null  // "number | null" is a union type — the value is either a number OR null
   reps: number | null
-  feel?: 'easy' | 'medium' | 'hard'
+  feel?: Feel
 }
 
 export interface ExerciseLog {
@@ -27,10 +29,11 @@ export interface WorkoutSession {
 }
 
 export interface CardioData {
-  type: 'run' | 'elliptical'
+  type: 'run' | 'elliptical' | 'walk' | 'bike' | 'row'
   duration: number  // minutes
+  distance?: number // miles — optional, powers pace tracking
   notes: string
-  feel?: 'easy' | 'medium' | 'hard'
+  feel?: Feel
 }
 
 export interface ExerciseDefinition {
@@ -66,23 +69,38 @@ export interface ExerciseTarget {
   sets: number
   repRange: string          // e.g. "8-12"
   weight: number | null
+  reason?: string           // human-readable — why this target ("hit 3x12 last time, rated easy")
 }
 
 export interface DayPlan {
   type: 'push' | 'pull' | 'legs' | 'fullbody' | 'cardio' | 'rest'
   exercises?: Record<string, ExerciseTarget>
+  cardioType?: CardioData['type']
+  cardioDuration?: number
+  cardioDistance?: number
+  cardioEffort?: Feel
   note?: string
+  deload?: boolean
 }
 
 export interface WeeklyPlan {
   weekStartDate: string
   settingsHash: string
   status: 'ok' | 'error'
+  source: 'engine' | 'ai'   // engine = generated on-device, no AI call needed
   durationConflict?: boolean
+  mesocycleWeek?: number
   schedule: Record<string, DayPlan>
+}
+
+export interface BodyweightEntry {
+  date: string
+  weight: number  // lbs
 }
 
 // ── TYPESCRIPT CONCEPT: Type aliases ─────────────────────────────────────────
 // "type" creates an alias for a more complex type expression.
 // This one describes the in-progress form state: exercise id → set index → field values.
-export type FormData = Record<string, Record<number, { weight: string; reps: string }>>
+// feel lives here too (not in separate state) so it shares the form's lifecycle —
+// previously a separate `feelData` state got wiped on tab switches and re-saves.
+export type FormData = Record<string, Record<number, { weight: string; reps: string; feel?: Feel }>>

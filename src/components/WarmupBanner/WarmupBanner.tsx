@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { round25 } from '../../engine/progression'
 import styles from './WarmupBanner.module.css'
 
-const MESSAGES: Record<string, string> = {
+const GENERIC_MESSAGES: Record<string, string> = {
   push:     'Do 2 warm-up sets at 50% of your working weight on your first exercise.',
   pull:     'Do 2 warm-up sets at 50% of your first exercise, or 10 band pull-aparts.',
   legs:     '5 min light walk + 10 bodyweight squats before loading up.',
@@ -21,12 +22,20 @@ function resolveType(workoutId: string): string | null {
 
 interface Props {
   workoutId: string
+  workingWeight?: number | null  // the first exercise's target weight — lets the banner give real numbers
 }
 
-export default function WarmupBanner({ workoutId }: Props) {
+export default function WarmupBanner({ workoutId, workingWeight }: Props) {
   const [open, setOpen] = useState(true)
   const key = resolveType(workoutId)
   if (!key) return null
+
+  let msg = GENERIC_MESSAGES[key]
+  if (workingWeight != null && workingWeight > 0) {
+    const w1 = round25(workingWeight * 0.4)
+    const w2 = round25(workingWeight * 0.7)
+    msg = `Warm up: ${w1} lbs × 8, ${w2} lbs × 3, then your working sets at ${workingWeight} lbs.`
+  }
 
   return (
     <div className={`${styles.banner} ${open ? '' : styles.collapsed}`}>
@@ -34,7 +43,7 @@ export default function WarmupBanner({ workoutId }: Props) {
         <span className={styles.label}>Warm-up</span>
         <span className={styles.chevron}>{open ? '▾' : '▸'}</span>
       </button>
-      {open && <p className={styles.msg}>{MESSAGES[key]}</p>}
+      {open && <p className={styles.msg}>{msg}</p>}
     </div>
   )
 }

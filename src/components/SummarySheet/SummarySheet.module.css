@@ -1,0 +1,92 @@
+.sheet {
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  padding: 22px 18px calc(18px + var(--safe-b));
+  border: 1px solid var(--border);
+  border-bottom: none;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 850;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.sub {
+  text-align: center;
+  color: var(--text3);
+  font-size: 13px;
+  margin: 4px 0 20px;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tile {
+  background: var(--surface2);
+  border-radius: var(--r-sm);
+  padding: 12px;
+}
+
+.tileNum { font-size: 24px; display: block; }
+
+.tile label {
+  font-size: 10.5px;
+  color: var(--text3);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(200, 255, 61, 0.3);
+  border-radius: var(--r-sm);
+  padding: 11px 12px;
+  margin-bottom: 10px;
+}
+
+.medal { font-size: 20px; flex-shrink: 0; }
+.pr b { font-size: 14px; color: var(--accent); }
+.pr span { font-size: 12px; color: var(--text2); }
+
+.deloadNote {
+  font-size: 12.5px;
+  color: var(--text2);
+  background: var(--surface2);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.nextUp {
+  font-size: 12.5px;
+  color: var(--text3);
+  line-height: 1.55;
+  padding: 4px 2px 14px;
+}
+
+.nextUp b { color: var(--text2); }
+
+.cta {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 16px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}

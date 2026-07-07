@@ -1,15 +1,10 @@
 import { useState } from 'react'
-import { ExerciseDefinition, WorkoutSession } from '../../../../types'
+import { ExerciseDefinition, ExerciseTarget, Feel, WorkoutSession } from '../../../../types'
 import { EXERCISES } from '../../../../data/exercises'
+import { resolveSetTarget } from '../../../../utils'
 import styles from './ExerciseCard.module.css'
 
-type Feel = 'easy' | 'medium' | 'hard'
-
-const FEEL_LABELS: { key: Feel; label: string }[] = [
-  { key: 'easy',   label: 'Easy' },
-  { key: 'medium', label: 'Medium' },
-  { key: 'hard',   label: 'Hard' },
-]
+const FEEL_KEYS: Feel[] = ['easy', 'medium', 'hard']
 
 function fmt(s: number): string {
   const m = Math.floor(s / 60)
@@ -19,21 +14,20 @@ function fmt(s: number): string {
 
 interface Props {
   ex: ExerciseDefinition
-  setData: Record<number, { weight: string; reps: string }>
+  setData: Record<number, { weight: string; reps: string; feel?: Feel }>
   prevSession: WorkoutSession | null
-  feel: Record<number, Feel>
-  aiTarget?: { repRange: string; weight: number | null }
+  aiTarget?: ExerciseTarget
   configured: number
-  timerRunning: boolean
   onChange: (setIdx: number, field: 'weight' | 'reps', value: string) => void
   onFeelChange: (setIdx: number, feel: Feel) => void
-  onTimerStart: () => void
+  onLogSet: (setIdx: number) => void
   onAdjust: (delta: number) => void
+  onSwap: () => void
 }
 
-export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget, configured, timerRunning, onChange, onFeelChange, onTimerStart, onAdjust }: Props) {
+export default function ExerciseCard({ ex, setData, prevSession, aiTarget, configured, onChange, onFeelChange, onLogSet, onAdjust, onSwap }: Props) {
   const [tipOpen, setTipOpen] = useState(false)
-  const [openMenuSet, setOpenMenuSet] = useState<number | null>(null)
+  const [menuSet, setMenuSet] = useState<number | null>(null)
   const libEx = EXERCISES.find((e) => e.id === ex.id)
   const label = aiTarget ? `${ex.sets} × ${aiTarget.repRange}` : `${ex.sets} × ${ex.target}`
   const primaryMuscle = libEx?.muscles[0]
@@ -58,92 +52,115 @@ export default function ExerciseCard({ ex, setData, prevSession, feel, aiTarget,
           {ex.note && <div className={styles.note}>{ex.note}</div>}
           {primaryMuscle && <div className={styles.muscles}>{primaryMuscle}{secondaryMuscles.length > 0 ? ` · ${secondaryMuscles.join(' · ')}` : ''}</div>}
         </div>
-        <div className={styles.target}>{label}</div>
+        <div className={styles.headRight}>
+          <button className={styles.swapBtn} onClick={onSwap}>⇄ swap</button>
+          <div className={styles.target}>{label}</div>
+        </div>
       </div>
 
       {libEx?.description && tipOpen && <div className={styles.tip}>{libEx.description}</div>}
+      {aiTarget?.reason && <div className={styles.reason}>{aiTarget.reason}</div>}
 
       <div className={styles.setsWrap}>
         {Array.from({ length: ex.sets }, (_, s) => {
           const prevSet = prevSession?.exercises?.[ex.id]?.sets?.[s]
           const fd = setData[s] ?? { weight: '', reps: '' }
           const unit = ex.time ? 'Sec' : 'Reps'
+          const menuOpen = menuSet === s
 
-          const wtPH   = aiTarget?.weight != null ? String(aiTarget.weight)
-                       : prevSet?.weight  != null ? String(prevSet.weight) : ''
-          const repsPH = aiTarget         ? aiTarget.repRange
-                       : prevSet?.reps    != null ? String(prevSet.reps)   : ex.target
+          const { weight: resolvedWeight, reps: resolvedReps } = resolveSetTarget(fd, aiTarget, prevSet, ex.target)
 
           const filled = ex.wt ? !!fd.weight : !!fd.reps
-          const menuOpen = openMenuSet === s
+
+          const beatLast = filled && !!prevSet && (
+            (parseFloat(fd.weight || '0') > (prevSet.weight ?? 0)) ||
+            (parseFloat(fd.weight || '0') === (prevSet.weight ?? 0) && parseFloat(fd.reps || '0') > (prevSet.reps ?? 0))
+          )
+
+          const step = (field: 'weight' | 'reps', delta: number) => {
+            const current = field === 'weight' ? fd.weight : fd.reps
+            const base = current || (field === 'weight' ? resolvedWeight : resolvedReps) || '0'
+            const next = Math.max(0, (parseFloat(base) || 0) + delta)
+            onChange(s, field, String(next))
+          }
 
           return (
-            <div key={s} className={styles.setBlock}>
-              <div className={styles.setRow}>
-                <span className={styles.setLbl}>Set {s + 1}</span>
-                <div className={styles.setInputs}>
-                  {ex.wt && (
-                    <div className={styles.setField}>
-                      <span className={styles.setFieldLbl}>lbs</span>
+            <div key={s} className={`${styles.setRow} ${filled ? styles.done : ''}`}>
+              <div className={styles.setMain}>
+                <span className={styles.setN}>{s + 1}</span>
+
+                {ex.wt && (
+                  <div className={styles.setValGroup}>
+                    <button className={styles.step} onClick={() => step('weight', -2.5)} aria-label="Decrease weight">−</button>
+                    <div className={styles.setVal}>
                       <input
-                        className={styles.setInput}
+                        className={styles.numInput}
                         type="number"
                         inputMode="decimal"
-                        placeholder={wtPH}
+                        placeholder={resolvedWeight}
                         value={fd.weight}
+                        onFocus={(e) => e.target.select()}
                         onChange={(e) => onChange(s, 'weight', e.target.value)}
                       />
+                      <small>lbs</small>
                     </div>
-                  )}
-                  <div className={styles.setField}>
-                    <span className={styles.setFieldLbl}>{unit}</span>
+                    <button className={styles.step} onClick={() => step('weight', 2.5)} aria-label="Increase weight">+</button>
+                  </div>
+                )}
+
+                <div className={styles.setValGroup}>
+                  <button className={styles.step} onClick={() => step('reps', -1)} aria-label={`Decrease ${unit.toLowerCase()}`}>−</button>
+                  <div className={styles.setVal}>
                     <input
-                      className={styles.setInput}
+                      className={styles.numInput}
                       type="number"
                       inputMode="numeric"
-                      placeholder={repsPH}
+                      placeholder={resolvedReps || ex.target}
                       value={fd.reps}
+                      onFocus={(e) => e.target.select()}
                       onChange={(e) => onChange(s, 'reps', e.target.value)}
                     />
+                    <small>{unit}</small>
                   </div>
+                  <button className={styles.step} onClick={() => step('reps', 1)} aria-label={`Increase ${unit.toLowerCase()}`}>+</button>
                 </div>
-                <div className={styles.timerGroup}>
-                  <button
-                    className={`${styles.timerBtn} ${timerRunning ? styles.timerBtnRunning : ''}`}
-                    onClick={() => { onTimerStart(); setOpenMenuSet(null) }}
-                    aria-label="Start rest timer"
-                  >
-                    ⏱
-                  </button>
-                  <button
-                    className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnActive : ''}`}
-                    onClick={() => setOpenMenuSet(menuOpen ? null : s)}
-                    aria-label="Timer settings"
-                  >
-                    ⋮
-                  </button>
+
+                <button
+                  className={`${styles.ck} ${filled ? styles.ckDone : ''}`}
+                  onClick={() => onLogSet(s)}
+                  aria-label={filled ? 'Restart rest timer' : 'Log this set'}
+                >
+                  ✓
+                </button>
+              </div>
+
+              <div className={styles.setMeta}>
+                {beatLast && <span className={styles.beat}>▲ beat last</span>}
+                <div className={styles.feelDots}>
+                  {FEEL_KEYS.map((k) => (
+                    <button
+                      key={k}
+                      className={`${styles.fdot} ${fd.feel === k ? `${styles.on} ${styles[k]}` : ''}`}
+                      onClick={() => onFeelChange(s, k)}
+                      aria-pressed={fd.feel === k}
+                      aria-label={`Rate this set ${k}`}
+                    />
+                  ))}
                 </div>
+                <button
+                  className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnActive : ''}`}
+                  onClick={() => setMenuSet(menuOpen ? null : s)}
+                  aria-label="Rest timer settings"
+                >
+                  ⋮
+                </button>
               </div>
 
               {menuOpen && (
                 <div className={styles.timerPanel}>
                   <button className={styles.tpBtn} onClick={() => onAdjust(-5)}>−5s</button>
                   <span className={styles.tpTime}>{fmt(configured)}</span>
-                  <button className={styles.tpBtn} onClick={() => onAdjust(+5)}>+5s</button>
-                </div>
-              )}
-
-              {filled && (
-                <div className={styles.feelRow}>
-                  {FEEL_LABELS.map(({ key, label: fl }) => (
-                    <button
-                      key={key}
-                      className={`${styles.feelBtn} ${feel[s] === key ? styles[key] : ''}`}
-                      onClick={() => onFeelChange(s, key)}
-                    >
-                      {fl}
-                    </button>
-                  ))}
+                  <button className={styles.tpBtn} onClick={() => onAdjust(5)}>+5s</button>
                 </div>
               )}
             </div>

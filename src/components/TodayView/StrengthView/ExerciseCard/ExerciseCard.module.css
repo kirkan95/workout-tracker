@@ -24,7 +24,29 @@
 .name    { font-size: 16px; font-weight: 700; line-height: 1.25; }
 .note    { font-size: 12px; color: var(--text3); margin-top: 2px; font-weight: 500; }
 .muscles { font-size: 11px; color: var(--text3); margin-top: 3px; font-weight: 500; text-transform: capitalize; }
-.target  { font-size: 13px; font-weight: 700; color: var(--accent); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+.headRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.target  { font-size: 13px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+
+.swapBtn {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
 
 .tipBtn {
   width: 20px;
@@ -54,104 +76,172 @@
 .tip {
   padding: 11px 16px;
   background: var(--accent-dim);
-  border-top: 1px solid rgba(108, 99, 255, 0.15);
+  border-top: 1px solid var(--border);
   font-size: 13px;
   color: var(--text2);
   line-height: 1.55;
 }
 
+.reason {
+  padding: 0 16px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.4;
+}
+
 .setsWrap { border-top: 1px solid var(--border); }
 
-.setBlock { border-bottom: 1px solid var(--border); }
-.setBlock:last-child { border-bottom: none; }
-
 .setRow {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setRow:last-child { border-bottom: none; }
+.setRow.done { background: var(--accent-dim); }
+
+.setMain {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
-  gap: 10px;
-}
-
-.setLbl {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text3);
-  width: 42px;
-  flex-shrink: 0;
-}
-
-.setInputs {
-  flex: 1;
-  display: flex;
   gap: 8px;
 }
 
-.setField {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+.setN {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text3);
+  width: 14px;
+  flex-shrink: 0;
 }
 
-.setFieldLbl {
+.setValGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.step {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: none;
+  color: var(--text2);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.setVal {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+  justify-content: center;
+}
+
+.setVal small {
   font-size: 10px;
   font-weight: 700;
   color: var(--text3);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.setInput {
-  width: 100%;
-  padding: 9px 8px;
-  border-radius: var(--r-sm);
-  border: 1.5px solid var(--border);
-  background: var(--surface2);
-  color: var(--text);
-  font-size: 17px;
-  font-weight: 700;
-  text-align: center;
-  outline: none;
-  -webkit-appearance: none;
-  transition: border-color 0.15s;
-  min-height: 44px;
-}
-
-.setInput:focus { border-color: var(--accent); }
-
-.timerGroup {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   flex-shrink: 0;
 }
 
-.timerBtn {
-  width: 36px;
+.numInput {
+  width: 100%;
+  max-width: 44px;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-align: right;
+  -webkit-appearance: none;
+  padding: 0;
+}
+
+.numInput::placeholder { color: var(--text3); opacity: 0.6; }
+
+.ck {
+  width: 40px;
   height: 36px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+  border-radius: 11px;
+  border: none;
   background: var(--surface2);
   color: var(--text3);
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 800;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
-  transition: border-color 0.15s, background 0.15s;
 }
 
-.timerBtn:active { border-color: var(--accent); background: var(--accent-dim); }
+.ckDone {
+  background: var(--success);
+  color: #0d1f0f;
+}
+
+.setMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 22px;
+}
+
+.beat {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--success);
+  background: var(--success-dim);
+  padding: 2px 7px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.feelDots {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.fdot {
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text3);
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fdot.on.easy   { background: var(--easy);   border-color: var(--easy); }
+.fdot.on.medium { background: var(--medium); border-color: var(--medium); }
+.fdot.on.hard   { background: var(--hard);   border-color: var(--hard); }
 
 .menuBtn {
-  width: 28px;
-  height: 36px;
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
-  border: 1.5px solid var(--border);
-  background: var(--surface2);
-  color: var(--text2);
+  border: none;
+  background: none;
+  color: var(--text3);
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -160,36 +250,23 @@
   justify-content: center;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
-  padding-bottom: 2px;
 }
 
-.menuBtnActive {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-dim);
-}
-
-.timerBtnRunning {
-  border-color: var(--accent);
-  background: var(--accent-dim);
-  color: var(--accent);
-}
+.menuBtnActive { color: var(--accent); }
 
 .timerPanel {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 14px;
-  padding: 10px 16px;
-  background: var(--accent-dim);
-  border-top: 1px solid rgba(108, 99, 255, 0.15);
+  padding: 8px 0 2px;
 }
 
 .tpBtn {
   padding: 6px 12px;
   border-radius: var(--r-sm);
-  border: 1.5px solid rgba(108, 99, 255, 0.3);
-  background: var(--surface);
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
   color: var(--accent);
   font-size: 13px;
   font-weight: 700;
@@ -198,33 +275,10 @@
 }
 
 .tpTime {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--text);
   min-width: 44px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }
-
-.feelRow {
-  display: flex;
-  gap: 6px;
-  padding: 8px 16px 10px;
-}
-
-.feelBtn {
-  flex: 1;
-  padding: 7px 4px;
-  border-radius: var(--r-sm);
-  border: 1.5px solid var(--border);
-  background: var(--surface2);
-  color: var(--text3);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.feelBtn.easy   { border-color: var(--success); background: var(--success-dim); color: var(--success); }
-.feelBtn.medium { border-color: var(--warn);    background: rgba(255,159,10,.12); color: var(--warn); }
-.feelBtn.hard   { border-color: #ff3b30;        background: rgba(255,59,48,.10); color: #ff3b30; }

@@ -77,16 +77,24 @@ export default function Onboarding({ onComplete }: Props) {
       return;
     }
     setSaving(true);
-    await onComplete({
-      goal: goal!,
-      equipment,
-      exclusions,
-      startDay,
-      restDays,
-      workoutDuration,
-      mesocycleStart: todayStr(),
-      timerAlert: "sound",
-    });
+    try {
+      await onComplete({
+        goal: goal!,
+        equipment,
+        exclusions,
+        startDay,
+        restDays,
+        workoutDuration,
+        mesocycleStart: todayStr(),
+        timerAlert: "sound",
+      });
+    } finally {
+      // On success the app swaps away from Onboarding entirely (settings is
+      // no longer null) so this never visibly re-enables the button; on
+      // failure it does — without this the button would stay stuck on
+      // "Saving…" forever with no way to retry.
+      setSaving(false);
+    }
   };
 
   return (

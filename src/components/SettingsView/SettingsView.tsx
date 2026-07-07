@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { UserSettings } from '../../types'
 import { Equipment } from '../../data/exercises'
+import { todayStr } from '../../utils'
 import styles from './SettingsView.module.css'
 
 const GOALS: { key: UserSettings['goal']; label: string; sub: string }[] = [
@@ -80,6 +81,10 @@ export default function SettingsView({ settings, saving, onSave }: Props) {
       restDays,
       workoutDuration,
       timerAlert,
+      // A goal change starts a new training block — the deload cadence and
+      // "week N of your mesocycle" messaging both key off this date, so it
+      // has to actually reset (the confirm dialog above promises this).
+      mesocycleStart: goal !== settings.goal ? todayStr() : settings.mesocycleStart,
     })
   }
 

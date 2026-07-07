@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { initializeFirestore, persistentLocalCache, persistentSingleTabManager } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCDN0YqFlg59E2nAkeF2Blc3o30PLRGBok',
@@ -14,4 +14,13 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig)
 
 export const auth = getAuth(app)
-export const db = getFirestore(app)
+
+// A gym app that only works with signal is a bad gym app — basements and
+// crowded gyms are exactly where PWAs lose connectivity. Persistent local
+// cache means reads serve instantly from disk and writes (saveSession,
+// saveSettings) queue locally and sync automatically on reconnect, instead
+// of just hanging or failing. Single-tab manager matches how this app is
+// actually used (one installed PWA instance, not multiple open tabs).
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({}) }),
+})

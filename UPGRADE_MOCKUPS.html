@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workout Tracker — V3 Visual Spec</title>
+<style>
+  /* ══════════════════════════════════════════════════════════════════
+     DESIGN TOKENS — copy these into src/index.css :root (dark-first).
+     Light mode keeps the existing variable architecture; only values swap.
+     ══════════════════════════════════════════════════════════════════ */
+  :root {
+    --bg:        #0B0C0E;
+    --surface:   #16181C;
+    --surface2:  #1F2228;
+    --border:    rgba(255,255,255,0.08);
+    --text:      #F4F5F7;
+    --text2:     rgba(244,245,247,0.72);
+    --text3:     #7C828D;
+
+    --volt:      #C8FF3D;   /* primary accent — actions, progress, "go" */
+    --volt-dim:  rgba(200,255,61,0.14);
+    --volt-ink:  #101400;   /* text color ON volt surfaces */
+
+    /* workout-type colors — used EVERYWHERE a day type appears */
+    --push:   #FF6B6B;
+    --pull:   #4D96FF;
+    --legs:   #6BCB77;
+    --cardio: #FFB84D;
+    --rest:   #565B64;
+
+    --easy:   #6BCB77;
+    --medium: #FFB84D;
+    --hard:   #FF6B6B;
+
+    --r: 18px; --r-sm: 12px;
+    --num: 'SF Pro Display', -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #050506; color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    padding: 48px 24px 96px;
+  }
+  .num { font-family: var(--num); font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -0.02em; }
+
+  /* ── spec page layout (not part of the app) ─────────────────────── */
+  h1 { font-size: 28px; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .intro { color: var(--text3); max-width: 720px; line-height: 1.5; margin-bottom: 40px; }
+  .screens { display: flex; flex-wrap: wrap; gap: 56px; align-items: flex-start; }
+  .screenBlock { max-width: 430px; }
+  .screenTitle { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .screenTitle .tag { color: var(--volt); }
+  .screenDesc { font-size: 13px; color: var(--text3); line-height: 1.5; margin-bottom: 16px; max-width: 390px; }
+  .phone {
+    width: 390px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 40px; padding: 18px 16px 14px; position: relative; overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+  }
+  .notes { width: 390px; margin-top: 14px; font-size: 12.5px; color: var(--text3); line-height: 1.6; }
+  .notes b { color: var(--text2); }
+  .notes li { margin: 6px 0 6px 16px; }
+  .pin {
+    display: inline-flex; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--volt); color: var(--volt-ink); font-size: 11px; font-weight: 800;
+    align-items: center; justify-content: center; vertical-align: 1px; margin-right: 2px;
+  }
+  .pinAbs { position: absolute; z-index: 5; box-shadow: 0 0 0 3px rgba(200,255,61,.25); }
+
+  /* ══════════════ APP COMPONENT STYLES (the actual spec) ══════════════ */
+
+  /* week bar */
+  .wk { display: flex; justify-content: space-between; margin: 6px 2px 16px; }
+  .wd { text-align: center; font-size: 10px; color: var(--text3); font-weight: 600; }
+  .dot {
+    width: 30px; height: 30px; border-radius: 50%; margin-top: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; border: 2px solid transparent;
+    background: var(--surface2); color: var(--text3);
+  }
+  .dot.push   { border-color: var(--push);   color: var(--push); }
+  .dot.pull   { border-color: var(--pull);   color: var(--pull); }
+  .dot.legs   { border-color: var(--legs);   color: var(--legs); }
+  .dot.cardio { border-color: var(--cardio); color: var(--cardio); }
+  .dot.done.push   { background: var(--push);   color: #fff; }
+  .dot.done.cardio { background: var(--cardio); color: #221500; }
+  .dot.missed { border-color: rgba(255,107,107,.45); color: rgba(255,107,107,.6); background: transparent; }
+  .dot.today { box-shadow: 0 0 0 3px var(--volt-dim), 0 0 0 1.5px var(--volt); }
+
+  /* sticky session header */
+  .sess {
+    display: flex; align-items: center; gap: 14px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; margin-bottom: 14px;
+    position: relative;
+  }
+  .ring { width: 52px; height: 52px; flex: none; }
+  .sessName { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; color: var(--pull); }
+  .sessMeta { font-size: 12.5px; color: var(--text3); margin-top: 2px; }
+  .sessVol  { margin-left: auto; text-align: right; }
+  .sessVol .num { font-size: 20px; }
+  .sessVol span { display: block; font-size: 10px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* coach note / reason */
+  .coach {
+    font-size: 13px; color: var(--text2); line-height: 1.5; background: var(--surface);
+    border-left: 3px solid var(--volt); border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    padding: 10px 12px; margin-bottom: 14px;
+  }
+
+  /* exercise card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; margin-bottom: 12px; position: relative; }
+  .cHead { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .cName { font-size: 16px; font-weight: 750; }
+  .cTarget { margin-left: auto; font-size: 13px; color: var(--text3); font-weight: 700; }
+  .cSwap { font-size: 11px; color: var(--text3); border: 1px solid var(--border); border-radius: 20px; padding: 2px 9px; background: none; }
+  .cReason { font-size: 12px; color: var(--volt); margin-bottom: 10px; }
+
+  .setRow {
+    display: flex; align-items: center; gap: 10px; padding: 9px 0;
+    border-top: 1px solid var(--border);
+  }
+  .setRow.done { opacity: .55; }
+  .setRow.next { background: linear-gradient(90deg, var(--volt-dim), transparent); margin: 0 -14px; padding-left: 14px; padding-right: 14px; }
+  .setN { font-size: 12px; color: var(--text3); font-weight: 700; width: 16px; }
+  .setVal { display: flex; align-items: baseline; gap: 3px; }
+  .setVal .num { font-size: 22px; }
+  .setVal small { font-size: 11px; color: var(--text3); font-weight: 600; }
+  .step { width: 26px; height: 26px; border-radius: 8px; background: var(--surface2); border: none; color: var(--text2); font-size: 15px; font-weight: 700; }
+  .feelDots { display: flex; gap: 5px; margin-left: auto; }
+  .fdot { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid var(--text3); background: transparent; }
+  .fdot.on.easy   { background: var(--easy);   border-color: var(--easy); }
+  .fdot.on.medium { background: var(--medium); border-color: var(--medium); }
+  .fdot.on.hard   { background: var(--hard);   border-color: var(--hard); }
+  .ck {
+    width: 44px; height: 40px; border-radius: 12px; border: none; font-size: 18px; font-weight: 800;
+    background: var(--surface2); color: var(--text3);
+  }
+  .setRow.next .ck { background: var(--volt); color: var(--volt-ink); }
+  .setRow.done .ck { background: transparent; color: var(--legs); }
+  .beat { font-size: 10.5px; font-weight: 800; color: var(--legs); background: rgba(107,203,119,.12); padding: 2px 7px; border-radius: 20px; }
+
+  /* rest timer bar */
+  .timerBar {
+    position: relative; margin-top: 16px; background: var(--surface2); border-radius: 16px;
+    overflow: hidden; display: flex; align-items: center; padding: 12px 16px; gap: 14px;
+  }
+  .timerFill { position: absolute; inset: 0; width: 62%; background: var(--volt-dim); border-right: 2px solid var(--volt); }
+  .timerBar .num { font-size: 34px; position: relative; }
+  .timerBar .tLbl { position: relative; font-size: 11px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+  .tBtn { position: relative; margin-left: auto; border: 1px solid var(--border); background: var(--surface); color: var(--text2); border-radius: 12px; padding: 8px 14px; font-size: 13px; font-weight: 700; }
+  .tBtn.skip { color: var(--text3); border: none; background: none; }
+
+  /* summary sheet */
+  .sheet { background: var(--surface); border-radius: 28px 28px 32px 32px; padding: 22px 18px 18px; border: 1px solid var(--border); }
+  .grabber { width: 38px; height: 4px; border-radius: 4px; background: var(--surface2); margin: 0 auto 18px; }
+  .bigTitle { font-size: 26px; font-weight: 850; letter-spacing: -0.5px; text-align: center; }
+  .subTitle { text-align: center; color: var(--text3); font-size: 13px; margin: 4px 0 20px; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .tile { background: var(--surface2); border-radius: var(--r-sm); padding: 12px; }
+  .tile .num { font-size: 26px; display: block; }
+  .tile label { font-size: 10.5px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .pr { display: flex; align-items: center; gap: 10px; background: var(--volt-dim); border: 1px solid rgba(200,255,61,.3); border-radius: var(--r-sm); padding: 11px 12px; margin-bottom: 10px; }
+  .pr .medal { font-size: 20px; }
+  .pr b { font-size: 14px; color: var(--volt); }
+  .pr span { font-size: 12px; color: var(--text2); }
+  .nextUp { font-size: 12.5px; color: var(--text3); line-height: 1.55; padding: 4px 2px 14px; }
+  .cta { width: 100%; padding: 15px; border: none; border-radius: 16px; background: var(--volt); color: var(--volt-ink); font-size: 16px; font-weight: 800; }
+
+  /* progress tab */
+  .pgT { font-size: 28px; font-weight: 850; letter-spacing: -0.5px; margin: 4px 0 14px; }
+  .statGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+  .sTile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 10px 8px; text-align: center; }
+  .sTile .num { font-size: 19px; display: block; }
+  .sTile label { font-size: 9px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .chartCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; margin-bottom: 12px; }
+  .chartHead { display: flex; align-items: center; margin-bottom: 8px; }
+  .chartHead select { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 5px 10px; font-size: 13px; font-weight: 600; }
+  .chartHead .delta { margin-left: auto; font-size: 13px; font-weight: 800; color: var(--legs); }
+  .heat { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; }
+  .hc { aspect-ratio: 1; border-radius: 4px; background: var(--surface2); }
+  .hRow { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--pull); border-radius: var(--r-sm); padding: 12px 14px; display: flex; align-items: center; margin-bottom: 8px; }
+  .hRow.push { border-left-color: var(--push); } .hRow.cardio { border-left-color: var(--cardio); }
+  .hRow b { font-size: 14px; }
+  .hRow .sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .hRow .prB { margin-left: auto; font-size: 10px; font-weight: 800; color: var(--volt); background: var(--volt-dim); border-radius: 20px; padding: 3px 8px; }
+  .chev { color: var(--text3); margin-left: 10px; }
+</style>
+</head>
+<body>
+
+<h1>Workout Tracker — V3 Visual Spec</h1>
+<p class="intro">
+  Companion to <b>UPGRADE.md</b>. Three annotated screens. Everything here uses the design tokens
+  at the top of this file's <code>&lt;style&gt;</code> block — copy them into <code>src/index.css</code>.
+  Dark-first; light mode keeps the same variable names with swapped values. Numbered pins
+  <span class="pin">1</span> match the notes under each phone.
+</p>
+
+<div class="screens">
+
+  <!-- ════════════════ SCREEN 1 — TODAY / LOGGING ════════════════ -->
+  <div class="screenBlock">
+    <div class="screenTitle"><span class="tag">Screen 1</span> · Today — mid-workout</div>
+    <div class="screenDesc">One-tap set logging, engine-generated targets with reasons, type-colored week bar, bottom rest-timer bar.</div>
+    <div class="phone">
+
+      <div class="wk">
+        <div class="wd">Mon<div class="dot done push">✓</div></div>
+        <div class="wd">Tue<div class="dot done cardio">✓</div></div>
+        <div class="wd" style="position:relative">Wed<div class="dot pull today">P</div><span class="pin pinAbs" style="top:-8px;right:-10px">1</span></div>
+        <div class="wd">Thu<div class="dot cardio">C</div></div>
+        <div class="wd">Fri<div class="dot legs">L</div></div>
+        <div class="wd">Sat<div class="dot">–</div></div>
+        <div class="wd">Sun<div class="dot">–</div></div>
+      </div>
+
+      <div class="sess">
+        <span class="pin pinAbs" style="top:-8px;left:-6px">2</span>
+        <svg class="ring" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="var(--surface2)" stroke-width="5"/>
+          <circle cx="26" cy="26" r="22" fill="none" stroke="var(--volt)" stroke-width="5"
+                  stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="58"
+                  transform="rotate(-90 26 26)"/>
+          <text x="26" y="30" text-anchor="middle" fill="var(--text)" font-size="12" font-weight="800">7/12</text>
+        </svg>
+        <div>
+          <div class="sessName">Pull Day</div>
+          <div class="sessMeta">Week 3 of 4 · deload next week</div>
+        </div>
+        <div class="sessVol"><span class="num">4,320</span><span>lbs volume · 23 min</span></div>
+      </div>
+
+      <div class="coach" style="position:relative"><span class="pin pinAbs" style="top:-8px;left:-8px">3</span>
+        Back and biceps today. You've progressed rows two weeks straight — one more solid session before the deload.
+      </div>
+
+      <div class="card">
+        <span class="pin pinAbs" style="top:-8px;right:-8px">4</span>
+        <div class="cHead">
+          <span class="cName">Dumbbell Bent-Over Rows</span>
+          <button class="cSwap">⇄ swap</button>
+          <span class="cTarget">3 × 8–12</span>
+        </div>
+        <div class="cReason">↑ +2.5 lbs — you hit 3×12 last time and rated it easy</div>
+
+        <div class="setRow done">
+          <span class="setN">1</span>
+          <div class="setVal"><span class="num">35</span><small>lbs</small></div>
+          <div class="setVal"><span class="num">10</span><small>reps</small></div>
+          <span class="beat">▲ beat last</span>
+          <div class="feelDots"><span class="fdot on easy"></span><span class="fdot"></span><span class="fdot"></span></div>
+          <button class="ck">✓</button>
+        </div>
+
+        <div class="setRow next" style="position:relative">
+          <span class="pin pinAbs" style="top:8px;left:-10px">5</span>
+          <span class="setN">2</span>
+          <button class="step">−</button>
+          <div class="setVal"><span class="num">35</span><small>lbs</small></div>
+          <button class="step">+</button>
+          <div class="setVal"><span class="num">10</span><small>reps</small></div>
+          <button class="step">+</button>
+          <div class="feelDots"><span class="fdot"></span><span class="fdot"></span><span class="fdot"></span></div>
+          <button class="ck">✓</button>
+        </div>
+
+        <div class="setRow">
+          <span class="setN">3</span>
+          <div class="setVal" style="opacity:.4"><span class="num">35</span><small>lbs</small></div>
+          <div class="setVal" style="opacity:.4"><span class="num">10</span><small>reps</small></div>
+          <div class="feelDots"><span class="fdot"></span><span class="fdot"></span><span class="fdot"></span></div>
+          <button class="ck">✓</button>
+        </div>
+      </div>
+
+      <div class="timerBar">
+        <span class="pin pinAbs" style="top:-8px;left:-6px">6</span>
+        <div class="timerFill"></div>
+        <span class="num">0:56</span>
+        <span class="tLbl">rest</span>
+        <button class="tBtn">+15s</button>
+        <button class="tBtn skip">skip</button>
+      </div>
+    </div>
+
+    <ul class="notes">
+      <li><span class="pin">1</span> <b>Week bar:</b> dots colored by workout type (tokens <code>--push/--pull/--legs/--cardio</code>). Done = filled + ✓; today = volt ring; past missed workout day = hollow red tint. Tapping any day opens a bottom-sheet preview of that day's plan.</li>
+      <li><span class="pin">2</span> <b>Session header</b> (sticky while scrolled): SVG progress ring = sets logged / total (<code>stroke-dashoffset</code>), running volume (Σ weight×reps) and elapsed time. Name uses the day-type color.</li>
+      <li><span class="pin">3</span> <b>Coach note:</b> engine or AI note, volt left border. Same slot as today's <code>planDay.note</code>.</li>
+      <li><span class="pin">4</span> <b>Exercise card:</b> volt "reason" line comes from <code>engine/progression.ts</code>. Swap opens a sheet of alternatives (same movement + muscles, filtered by equipment/exclusions). "?" how-to stays, behind long-press or the swap sheet.</li>
+      <li><span class="pin">5</span> <b>Set rows:</b> pre-filled with target. Active row highlighted, steppers ±2.5 lbs / ±1 rep, tap number for keyboard. <b>✓ logs the shown values and auto-starts the rest timer</b> — happy path is one tap. Feel = three always-visible dots (green/amber/red). Logged rows dim; "▲ beat last" chip when set > previous session's same set.</li>
+      <li><span class="pin">6</span> <b>Rest timer bar</b> replaces the floating pill: fixed above bottom nav, drain-fill background, tabular numerals, +15s and skip. Timestamp-based countdown (survives phone lock — UPGRADE.md §1.3).</li>
+    </ul>
+  </div>
+
+  <!-- ════════════════ SCREEN 2 — SUMMARY SHEET ════════════════ -->
+  <div class="screenBlock">
+    <div class="screenTitle"><span class="tag">Screen 2</span> · Post-workout summary</div>
+    <div class="screenDesc">Bottom sheet shown on "Complete Workout". The dopamine payoff — all data already exists in the session object.</div>
+    <div class="phone" style="display:flex;align-items:flex-end;min-height:640px;background:linear-gradient(rgba(11,12,14,.4),rgba(11,12,14,.9)), var(--bg);">
+      <div class="sheet" style="width:100%">
+        <div class="grabber"></div>
+        <div class="bigTitle">Pull Day done 💪</div>
+        <div class="subTitle">Wed, Jul 8 · 41 minutes</div>
+
+        <div class="tiles">
+          <div class="tile"><span class="num">7,860</span><label>lbs total volume</label></div>
+          <div class="tile"><span class="num">12/12</span><label>sets completed</label></div>
+          <div class="tile"><span class="num" style="color:var(--legs)">4</span><label>sets beat last time</label></div>
+          <div class="tile"><span class="num">🔥 3</span><label>week streak</label></div>
+        </div>
+
+        <div class="pr" style="position:relative"><span class="pin pinAbs" style="top:-8px;left:-8px">7</span>
+          <span class="medal">🏅</span>
+          <div><b>New PR — Bent-Over Rows</b><br><span>est. 1-rep max 46.7 lbs (was 43.2)</span></div>
+        </div>
+
+        <div class="nextUp" style="position:relative"><span class="pin pinAbs" style="top:-4px;left:-8px">8</span>
+          <b style="color:var(--text2)">Next up:</b> Cardio tomorrow — 32 min easy. Legs + Core Friday; goblet squats move up to 40 lbs.
+        </div>
+
+        <button class="cta">Nice. Done for today</button>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="pin">7</span> <b>PR detection:</b> Epley e1RM = weight × (1 + reps/30) per exercise per session (<code>engine/e1rm.ts</code>); new all-time max → this card. Multiple PRs stack. No PR → row hidden.</li>
+      <li><span class="pin">8</span> <b>Next up</b> reads from the already-generated weekly plan — makes the plan feel alive and answers "what's tomorrow" without hunting.</li>
+      <li><b>Behavior:</b> sheet slides up on save success (or "saved locally — will sync" when offline). Respect <code>prefers-reduced-motion</code>. Confetti optional and subtle; never on deload weeks (show "recovery week banked" tone instead).</li>
+    </ul>
+  </div>
+
+  <!-- ════════════════ SCREEN 3 — PROGRESS TAB ════════════════ -->
+  <div class="screenBlock">
+    <div class="screenTitle"><span class="tag">Screen 3</span> · Progress (renamed from History)</div>
+    <div class="screenDesc">Answers "am I improving", not just "what did I do". Chart is a plain SVG polyline — no chart library.</div>
+    <div class="phone">
+      <div class="pgT">Progress</div>
+
+      <div class="statGrid" style="position:relative"><span class="pin pinAbs" style="top:-10px;left:-8px">9</span>
+        <div class="sTile"><span class="num">🔥 3</span><label>wk streak</label></div>
+        <div class="sTile"><span class="num">11</span><label>this month</label></div>
+        <div class="sTile"><span class="num">86k</span><label>lbs lifted</label></div>
+        <div class="sTile"><span class="num" style="color:var(--volt)">6</span><label>PRs</label></div>
+      </div>
+
+      <div class="chartCard" style="position:relative"><span class="pin pinAbs" style="top:-8px;right:-8px">10</span>
+        <div class="chartHead">
+          <select><option>Bent-Over Rows ▾</option></select>
+          <span class="delta">▲ 18% / 8 wks</span>
+        </div>
+        <svg viewBox="0 0 340 90" style="width:100%">
+          <polyline points="0,72 42,68 84,70 126,58 168,52 210,54 252,40 294,34 340,22"
+                    fill="none" stroke="var(--volt)" stroke-width="2.5" stroke-linejoin="round"/>
+          <circle cx="340" cy="22" r="4" fill="var(--volt)"/>
+          <text x="335" y="12" text-anchor="end" fill="var(--text2)" font-size="11" font-weight="700">e1RM 46.7</text>
+        </svg>
+      </div>
+
+      <div class="chartCard" style="position:relative"><span class="pin pinAbs" style="top:-8px;right:-8px">11</span>
+        <div class="chartHead" style="margin-bottom:10px"><span style="font-size:13px;font-weight:700">Last 12 weeks</span></div>
+        <div class="heat">
+          <div class="hc" style="background:var(--push)"></div><div class="hc" style="background:var(--cardio)"></div><div class="hc" style="background:var(--pull)"></div><div class="hc"></div><div class="hc" style="background:var(--legs)"></div><div class="hc"></div>
+          <div class="hc" style="background:var(--push)"></div><div class="hc"></div><div class="hc" style="background:var(--pull)"></div><div class="hc" style="background:var(--cardio)"></div><div class="hc" style="background:var(--legs)"></div><div class="hc"></div>
+          <div class="hc" style="background:var(--push)"></div><div class="hc" style="background:var(--cardio)"></div><div class="hc" style="background:var(--pull)"></div><div class="hc" style="background:var(--cardio)"></div><div class="hc" style="background:var(--legs)"></div><div class="hc"></div>
+          <div class="hc" style="background:var(--push)"></div><div class="hc" style="background:var(--cardio)"></div><div class="hc" style="background:var(--pull)"></div><div class="hc"></div><div class="hc"></div><div class="hc"></div>
+        </div>
+      </div>
+
+      <div class="hRow" style="position:relative"><span class="pin pinAbs" style="top:-8px;left:-8px">12</span>
+        <div><b>Pull Day</b><div class="sub">Wed, Jul 8 · 12 sets · 7,860 lbs</div></div>
+        <span class="prB">PR</span><span class="chev">›</span>
+      </div>
+      <div class="hRow cardio">
+        <div><b>Cardio — Run</b><div class="sub">Tue, Jul 7 · 32 min · 9:58 /mi</div></div>
+        <span class="chev">›</span>
+      </div>
+      <div class="hRow push">
+        <div><b>Push Day</b><div class="sub">Mon, Jul 6 · 11 sets · 6,140 lbs</div></div>
+        <span class="chev">›</span>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="pin">9</span> <b>Stat tiles:</b> streak (consecutive weeks meeting planned workout count), workouts this month, lifetime volume, PR count. Keep O(1): maintain a small aggregate doc updated on each save rather than scanning all sessions (UPGRADE.md §1.6).</li>
+      <li><span class="pin">10</span> <b>Exercise trend:</b> dropdown of exercises the user has ≥3 sessions of; plots e1RM (weighted) or top-set reps (bodyweight). Pure <code>&lt;svg&gt;&lt;polyline&gt;</code>, points normalized in ~15 lines of TS. Delta chip compares first/last point in window.</li>
+      <li><span class="pin">11</span> <b>Heatmap:</b> 12 weeks × days-per-week grid, cells tinted by workout-type token; empty = <code>--surface2</code>. Tap week → scrolls list to it.</li>
+      <li><span class="pin">12</span> <b>Session rows:</b> existing accordion detail stays on tap; adds type-colored left border, per-session set/volume summary, PR badge, cardio pace. Paginate: first 90 sessions, then load-more.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

@@ -8,34 +8,61 @@
   padding: 0;
 }
 
+/* ── Design tokens — dark-first "gym mode" ──────────────────────────────────
+   See UPGRADE_MOCKUPS.html for the annotated visual spec these values match.
+   --accent stays as the name every component already references; it now
+   points at the volt accent instead of the old purple. --accent-ink is the
+   text color to use ON a solid --accent background (volt is light, so white
+   text fails contrast — use --accent-ink, not #fff, on accent-filled surfaces). */
 :root {
-  --accent: #6c63ff;
-  --accent-dim: rgba(108, 99, 255, 0.12);
-  --success: #34c759;
-  --success-dim: rgba(52, 199, 89, 0.12);
-  --warn: #ff9f0a;
-  --bg: #f2f2f7;
-  --surface: #ffffff;
-  --surface2: #f2f2f7;
-  --border: rgba(0, 0, 0, 0.09);
-  --text: #000000;
-  --text2: #3c3c43;
-  --text3: #8e8e93;
+  --accent: #C8FF3D;
+  --accent-dim: rgba(200, 255, 61, 0.14);
+  --accent-ink: #101400;
+
+  --success: #6BCB77;
+  --success-dim: rgba(107, 203, 119, 0.14);
+  --warn: #FFB84D;
+  --warn-dim: rgba(255, 184, 77, 0.14);
+  --danger: #FF6B6B;
+  --danger-dim: rgba(255, 107, 107, 0.14);
+
+  /* workout-type colors — used everywhere a day type appears: week bar,
+     session header, history/progress rows, heatmap cells */
+  --push: #FF6B6B;
+  --pull: #4D96FF;
+  --legs: #6BCB77;
+  --cardio: #FFB84D;
+  --fullbody: #9B8CFF;
+  --rest: #565B64;
+
+  /* feel ratings reuse the type palette so the whole app speaks one language */
+  --easy: var(--legs);
+  --medium: var(--cardio);
+  --hard: var(--push);
+
+  --bg: #0B0C0E;
+  --surface: #16181C;
+  --surface2: #1F2228;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #F4F5F7;
+  --text2: rgba(244, 245, 247, 0.72);
+  --text3: #7C828D;
+
   --nav-h: 56px;
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
-  --r: 16px;
-  --r-sm: 10px;
+  --r: 18px;
+  --r-sm: 12px;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --bg: #000000;
-    --surface: #1c1c1e;
-    --surface2: #2c2c2e;
-    --border: rgba(255, 255, 255, 0.08);
-    --text: #ffffff;
-    --text2: rgba(255, 255, 255, 0.8);
+    --bg: #f2f2f7;
+    --surface: #ffffff;
+    --surface2: #f2f2f7;
+    --border: rgba(0, 0, 0, 0.09);
+    --text: #000000;
+    --text2: #3c3c43;
     --text3: #8e8e93;
   }
 }
@@ -51,6 +78,23 @@ body {
 
 #root {
   height: var(--app-height, 100dvh);
+}
+
+/* Tabular numerals for anything read mid-set: weights, reps, timer, totals.
+   Keeps digit widths fixed so numbers don't jitter as they change. */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Shared typography used across views */
@@ -97,4 +141,28 @@ body {
   -webkit-overflow-scrolling: touch;
   padding: 20px 16px;
   padding-bottom: calc(var(--nav-h) + var(--safe-b) + 24px);
+}
+
+/* Generic bottom sheet + scrim, shared by day-preview, swap, and summary sheets */
+.sheetScrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheetWrap {
+  width: 100%;
+  max-width: 430px;
+}
+
+.sheetGrabber {
+  width: 38px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--surface2);
+  margin: 0 auto 18px;
 }

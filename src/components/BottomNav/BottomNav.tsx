@@ -1,6 +1,6 @@
 import styles from './BottomNav.module.css'
 
-export type Tab = 'today' | 'history' | 'settings'
+export type Tab = 'today' | 'progress' | 'settings'
 
 interface Props {
   activeTab: Tab
@@ -23,14 +23,14 @@ export default function BottomNav({ activeTab, onSwitch }: Props) {
         Today
       </button>
       <button
-        className={`${styles.btn} ${activeTab === 'history' ? styles.active : ''}`}
-        onClick={() => onSwitch('history')}
+        className={`${styles.btn} ${activeTab === 'progress' ? styles.active : ''}`}
+        onClick={() => onSwitch('progress')}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
+          <polyline points="3 17 9 11 13 15 21 6" />
+          <polyline points="15 6 21 6 21 12" />
         </svg>
-        History
+        Progress
       </button>
       <button
         className={`${styles.btn} ${activeTab === 'settings' ? styles.active : ''}`}

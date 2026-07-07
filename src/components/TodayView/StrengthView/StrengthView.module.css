@@ -1,10 +1,37 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.ring { width: 52px; height: 52px; flex: none; }
+
+.headerText { min-width: 0; }
+
+.dayName { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; }
+.headerMeta { font-size: 12.5px; color: var(--text3); margin-top: 2px; }
+
+.headerVol {
+  margin-left: auto;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.volNum { font-size: 19px; display: block; }
+.volLbl { font-size: 10.5px; color: var(--text3); font-weight: 600; white-space: nowrap; }
+
 .completeBtn {
   width: 100%;
   padding: 18px;
   border-radius: var(--r);
   border: none;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-ink);
   font-size: 17px;
   font-weight: 800;
   cursor: pointer;
@@ -17,4 +44,62 @@
 
 .completeBtn:disabled { opacity: 0.6; }
 .completeBtn:active:not(:disabled) { transform: scale(0.98); opacity: 0.88; }
-.completeBtn.saved { background: var(--success); }
+.completeBtn.saved { background: var(--success); color: #0d1f0f; }
+
+/* ── swap sheet ── */
+.swapSheet {
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  padding: 22px 18px calc(18px + var(--safe-b));
+  border: 1px solid var(--border);
+  border-bottom: none;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.swapTitle { font-size: 20px; font-weight: 800; text-align: center; }
+.swapSub { font-size: 13px; color: var(--text3); text-align: center; margin: 4px 0 16px; }
+.swapEmpty { font-size: 13px; color: var(--text3); text-align: center; padding: 20px 0; }
+
+.swapOption {
+  width: 100%;
+  text-align: left;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swapOptionName { display: block; font-size: 15px; font-weight: 700; }
+.swapOptionMuscles { display: block; font-size: 12px; color: var(--text3); margin-top: 2px; text-transform: capitalize; }
+
+.swapReset {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swapClose {
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}

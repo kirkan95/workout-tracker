@@ -1,4 +1,5 @@
 import { DaySchedule } from '../types'
+import { weeksSinceEpoch } from '../utils'
 
 export const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -56,9 +57,11 @@ const REST = { type: 'rest' as const, id: 'rest', name: 'Rest Day', sub: 'Option
 const CARDIO = { type: 'cardio' as const, id: 'cardio', name: 'Cardio', sub: '2-mile run or 30 min elliptical' }
 
 function getWeekVariant(d: Date): 0 | 1 {
-  const jan1 = new Date(d.getFullYear(), 0, 1)
-  const weekNum = Math.floor((d.getTime() - jan1.getTime()) / (7 * 86400000))
-  return (weekNum % 2) as 0 | 1
+  // Fixed epoch (not Jan 1 of the current year) so variants keep alternating
+  // cleanly across the New Year boundary instead of resetting to the same
+  // variant two weeks running.
+  const weekNum = weeksSinceEpoch(d)
+  return (((weekNum % 2) + 2) % 2) as 0 | 1
 }
 
 export function getSchedule(d: Date = new Date()): Record<number, DaySchedule> {

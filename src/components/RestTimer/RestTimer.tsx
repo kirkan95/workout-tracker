@@ -2,8 +2,10 @@ import styles from './RestTimer.module.css'
 
 interface Props {
   seconds: number
+  configured: number
   running: boolean
-  onStop: () => void
+  onSkip: () => void
+  onAdjust: (delta: number) => void
 }
 
 function fmt(s: number): string {
@@ -12,12 +14,17 @@ function fmt(s: number): string {
   return `${m}:${String(r).padStart(2, '0')}`
 }
 
-export default function RestTimer({ seconds, running, onStop }: Props) {
+export default function RestTimer({ seconds, configured, running, onSkip, onAdjust }: Props) {
   if (!running) return null
+  const pct = configured > 0 ? Math.max(0, Math.min(100, (seconds / configured) * 100)) : 0
+
   return (
-    <div className={styles.pill}>
-      <span className={styles.time}>{fmt(seconds)}</span>
-      <button className={styles.stopBtn} onClick={onStop} aria-label="Stop timer">⏹</button>
+    <div className={styles.bar} role="status" aria-live="polite">
+      <div className={styles.fill} style={{ width: `${pct}%` }} />
+      <span className={`${styles.time} num`}>{fmt(seconds)}</span>
+      <span className={styles.lbl}>rest</span>
+      <button className={styles.adjustBtn} onClick={() => onAdjust(15)}>+15s</button>
+      <button className={styles.skipBtn} onClick={onSkip}>skip</button>
     </div>
   )
 }
