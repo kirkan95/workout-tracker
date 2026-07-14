@@ -103,4 +103,7 @@ export interface BodyweightEntry {
 // This one describes the in-progress form state: exercise id → set index → field values.
 // feel lives here too (not in separate state) so it shares the form's lifecycle —
 // previously a separate `feelData` state got wiped on tab switches and re-saves.
-export type FormData = Record<string, Record<number, { weight: string; reps: string; feel?: Feel }>>
+// `logged` is set only when the lifter taps the ✓ button — it's what marks a
+// set "done" (green row + filled check), so merely typing a weight or rep no
+// longer checks the set off.
+export type FormData = Record<string, Record<number, { weight: string; reps: string; feel?: Feel; logged?: boolean }>>

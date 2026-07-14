@@ -68,6 +68,33 @@ export function exerciseTrend(exerciseId: string, sessions: WorkoutSession[], li
     .slice(-limit)
 }
 
+// Consecutive days worked out, walking backward from today. A configured rest
+// day never breaks the streak (it's a planned off day, not a missed one), and
+// today itself is a "grace" day — if you haven't trained yet today the streak
+// still stands, it just doesn't count until you log something. This is the
+// motivating, attainable counterpart to the weekly streak below (a full week
+// every week is a high bar — see the "streak should be days and weeks" note).
+export function computeDayStreak(sessions: WorkoutSession[], settings: UserSettings, today: Date = new Date()): number {
+  const completedDates = new Set(sessions.filter((s) => s.completed).map((s) => s.date))
+  const restDays = new Set(settings.restDays)
+
+  let streak = 0
+  const cursor = new Date(today)
+  for (let i = 0; i < 366; i++) {
+    const isToday = i === 0
+    const ds = dateStr(cursor)
+    if (completedDates.has(ds)) {
+      streak++
+    } else if (restDays.has(cursor.getDay())) {
+      // planned rest — bridges the streak without adding to it
+    } else if (!isToday) {
+      break // a missed working day on any past day ends the streak
+    }
+    cursor.setDate(cursor.getDate() - 1)
+  }
+  return streak
+}
+
 // Consecutive fully-completed past weeks, walking backward from last week
 // (the current, possibly-still-in-progress week is never counted). A week
 // "counts" when the number of distinct completed dates in it meets the

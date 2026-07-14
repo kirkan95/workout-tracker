@@ -14,7 +14,7 @@ function fmt(s: number): string {
 
 interface Props {
   ex: ExerciseDefinition
-  setData: Record<number, { weight: string; reps: string; feel?: Feel }>
+  setData: Record<number, { weight: string; reps: string; feel?: Feel; logged?: boolean }>
   prevSession: WorkoutSession | null
   aiTarget?: ExerciseTarget
   configured: number
@@ -70,7 +70,9 @@ export default function ExerciseCard({ ex, setData, prevSession, aiTarget, confi
 
           const { weight: resolvedWeight, reps: resolvedReps } = resolveSetTarget(fd, aiTarget, prevSet, ex.target)
 
-          const filled = ex.wt ? !!fd.weight : !!fd.reps
+          // "Done" is an explicit action (tapping ✓), not a side effect of
+          // typing a number — otherwise editing a weight would check the set.
+          const filled = !!fd.logged
 
           const beatLast = filled && !!prevSet && (
             (parseFloat(fd.weight || '0') > (prevSet.weight ?? 0)) ||

@@ -130,6 +130,9 @@ export default function App() {
             weight: es?.weight != null ? String(es.weight) : '',
             reps:   es?.reps   != null ? String(es.reps)   : '',
             feel:   es?.feel,
+            // A set that was already saved counts as logged, so re-opening a
+            // completed session shows its checkmarks instead of a blank slate.
+            logged: es != null && (es.weight != null || es.reps != null),
           }
         }
       })

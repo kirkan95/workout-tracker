@@ -23,8 +23,12 @@ function weekParityFor(weekStartDate: string): 0 | 1 {
 }
 
 // Which day gets which workout type, honoring the user's actual rest days
-// (the old static schedule ignored these — see UPGRADE.md §0.3).
-function buildDayTypeLayout(settings: UserSettings, weekStartDate: string): { date: string; type: DayPlan['type'] }[] {
+// (the old static schedule ignored these — see UPGRADE.md §0.3). `rotation` is
+// how many earlier days this week already used the same type: the 1st full-body
+// day is rotation 0, the 2nd is rotation 1, and so on. It lets the exercise
+// picker pull a *different* slice of the pool for each repeat of a day type so
+// two full-body days in the same week aren't the identical workout.
+function buildDayTypeLayout(settings: UserSettings, weekStartDate: string): { date: string; type: DayPlan['type']; rotation: number }[] {
   const isPPL = settings.goal === 'stronger' || settings.goal === 'muscle'
   const start = new Date(weekStartDate + 'T00:00:00')
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -35,17 +39,23 @@ function buildDayTypeLayout(settings: UserSettings, weekStartDate: string): { da
 
   const STRENGTH_CYCLE: StrengthDayType[] = ['push', 'pull', 'legs']
   const cardioEvery = settings.goal === 'loseweight' ? 3 : 4
+  const typeCounts: Record<string, number> = {}
   let workingIdx = 0
 
   return days.map(({ date, dow }) => {
-    if (settings.restDays.includes(dow)) return { date, type: 'rest' as const }
+    if (settings.restDays.includes(dow)) return { date, type: 'rest' as const, rotation: 0 }
     const i = workingIdx++
+    let type: DayPlan['type']
     if (isPPL) {
-      if (i < 3) return { date, type: STRENGTH_CYCLE[i] }
-      if (i < 5) return { date, type: 'cardio' as const }
-      return { date, type: STRENGTH_CYCLE[i % 3] }
+      if (i < 3) type = STRENGTH_CYCLE[i]
+      else if (i < 5) type = 'cardio'
+      else type = STRENGTH_CYCLE[i % 3]
+    } else {
+      type = (i + 1) % cardioEvery === 0 ? 'cardio' : 'fullbody'
     }
-    return { date, type: (i + 1) % cardioEvery === 0 ? ('cardio' as const) : ('fullbody' as const) }
+    const rotation = typeCounts[type] ?? 0
+    typeCounts[type] = rotation + 1
+    return { date, type, rotation }
   })
 }
 
@@ -59,23 +69,29 @@ function passesFilters(e: LibraryExercise, settings: UserSettings): boolean {
   return true
 }
 
-// Deterministic A/B-style variety: picks a different slice of the eligible
-// pool depending on week parity, so the same day type doesn't repeat the
-// identical exercise list every single week.
-function pickAlternating<T>(pool: T[], count: number, weekParity: 0 | 1): T[] {
+// Deterministic variety: picks `count` items spaced through the eligible pool,
+// starting at `offset`. Advancing the offset (per week, and per repeat of a day
+// type within the week) walks a different, non-overlapping slice each time, so
+// the same day type doesn't repeat the identical exercise list.
+function pickAlternating<T>(pool: T[], count: number, offset: number): T[] {
   if (!pool.length || count <= 0) return []
+  const n = Math.min(count, pool.length)
   const out: T[] = []
   const seen = new Set<number>()
-  for (let i = 0; i < count; i++) {
-    const idx = (i * 2 + weekParity) % pool.length
-    if (seen.has(idx)) continue
+  for (let i = 0; i < n; i++) {
+    let idx = (((offset + i * 2) % pool.length) + pool.length) % pool.length
+    while (seen.has(idx)) idx = (idx + 1) % pool.length
     seen.add(idx)
     out.push(pool[idx])
   }
   return out
 }
 
-function pickExercisesForDay(dayType: StrengthDayType, settings: UserSettings, weekParity: 0 | 1): LibraryExercise[] {
+// `rotation` = which repeat of this day type it is within the week (0 = first).
+// Each repeat starts its slice one full block past the previous day's, so the
+// 2nd full-body day of a week draws different exercises than the 1st, and
+// `weekParity` shifts the whole thing week over week.
+function pickExercisesForDay(dayType: StrengthDayType, settings: UserSettings, weekParity: 0 | 1, rotation: number): LibraryExercise[] {
   const pool = EXERCISES
     .filter((e) => (dayType === 'fullbody' ? e.style === 'fullbody' || e.style === 'both' : e.day === dayType && (e.style === 'ppl' || e.style === 'both')))
     .filter((e) => passesFilters(e, settings))
@@ -89,9 +105,14 @@ function pickExercisesForDay(dayType: StrengthDayType, settings: UserSettings, w
   const targetCompoundCount = dayType === 'fullbody' ? 2 : Math.min(2, compounds.length)
   const targetTotal = dayType === 'fullbody' ? 4 : 5
 
-  const chosenCompounds = pickAlternating(compounds, targetCompoundCount, weekParity)
-  const remainingSlots = Math.max(0, targetTotal - chosenCompounds.length)
-  const chosenIsolations = pickAlternating(isolations, remainingSlots, weekParity)
+  // A day consuming `count` items spans `2*count` indices (stride 2), so the
+  // next same-type day starts one full span later — non-overlapping variety.
+  const remainingSlots = Math.max(0, targetTotal - targetCompoundCount)
+  const compoundOffset = weekParity + rotation * targetCompoundCount * 2
+  const isolationOffset = weekParity + rotation * remainingSlots * 2
+
+  const chosenCompounds = pickAlternating(compounds, targetCompoundCount, compoundOffset)
+  const chosenIsolations = pickAlternating(isolations, Math.max(0, targetTotal - chosenCompounds.length), isolationOffset)
 
   return [...chosenCompounds, ...chosenIsolations]
 }
@@ -169,11 +190,11 @@ export function planWeek({ settings, sessions, weekStartDate }: PlanWeekInput): 
   const layout = buildDayTypeLayout(settings, weekStartDate)
   const schedule: Record<string, DayPlan> = {}
 
-  layout.forEach(({ date, type }) => {
+  layout.forEach(({ date, type, rotation }) => {
     if (type === 'rest') { schedule[date] = { type: 'rest' }; return }
     if (type === 'cardio') { schedule[date] = planCardioDay(sorted, deload); return }
 
-    const chosen = fitToDuration(pickExercisesForDay(type, settings, weekParity), settings.goal, settings.workoutDuration)
+    const chosen = fitToDuration(pickExercisesForDay(type, settings, weekParity, rotation), settings.goal, settings.workoutDuration)
     const exercises: Record<string, ExerciseTarget> = {}
 
     chosen.forEach((libEx) => {

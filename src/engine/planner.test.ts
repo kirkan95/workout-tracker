@@ -48,6 +48,23 @@ describe('planWeek', () => {
     expect(a).toEqual(b)
   })
 
+  it('gives repeated day types within a week different exercises', () => {
+    // A "stay fit" user training every day gets many full-body days; each one
+    // should pull a different slice of the pool, not the identical workout.
+    const settings: UserSettings = {
+      ...baseSettings, goal: 'stayfit', restDays: [],
+      equipment: ['dumbbells', 'pullupbar', 'bench', 'kettlebell'],
+    }
+    const plan = planWeek({ settings, sessions: [], weekStartDate: '2026-07-06' })
+    const fullBodyDays = Object.values(plan.schedule)
+      .filter((d) => d.type === 'fullbody' && d.exercises)
+      .map((d) => Object.keys(d.exercises!).sort().join(','))
+
+    expect(fullBodyDays.length).toBeGreaterThanOrEqual(2)
+    // Not every full-body day is the identical exercise list.
+    expect(new Set(fullBodyDays).size).toBeGreaterThan(1)
+  })
+
   it('flags a duration conflict for strength goals under 30 minutes', () => {
     const plan = planWeek({
       settings: { ...baseSettings, goal: 'stronger', workoutDuration: 20 },

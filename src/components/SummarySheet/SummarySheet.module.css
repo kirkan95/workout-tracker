@@ -1,10 +1,14 @@
 .sheet {
   background: var(--surface);
   border-radius: 28px 28px 0 0;
-  padding: 22px 18px calc(18px + var(--safe-b));
+  /* dvh (not vh) so the sheet is measured against the *visible* viewport on
+     mobile — with vh the bottom sat behind the browser chrome / home
+     indicator and the CTA got clipped. Extra bottom padding keeps the button
+     clear of the safe-area inset. */
+  padding: 22px 18px calc(28px + var(--safe-b));
   border: 1px solid var(--border);
   border-bottom: none;
-  max-height: 85vh;
+  max-height: 88dvh;
   overflow-y: auto;
 }
 
@@ -26,8 +30,20 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
+
+.hint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text3);
+  background: var(--surface2);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.hint b { color: var(--text2); font-weight: 700; }
 
 .tile {
   background: var(--surface2);

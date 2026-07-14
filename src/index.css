@@ -15,6 +15,12 @@
    text color to use ON a solid --accent background (volt is light, so white
    text fails contrast — use --accent-ink, not #fff, on accent-filled surfaces). */
 :root {
+  /* Dark-only app: the volt/lime accent is designed for dark surfaces and
+     fails contrast on white, so we pin the whole UI to dark rather than
+     following the OS `prefers-color-scheme`. See issue: "can't see lime
+     green in light mode — should be dark by default". */
+  color-scheme: dark;
+
   --accent: #C8FF3D;
   --accent-dim: rgba(200, 255, 61, 0.14);
   --accent-ink: #101400;
@@ -53,18 +59,6 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
   --r: 18px;
   --r-sm: 12px;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f2f2f7;
-    --surface: #ffffff;
-    --surface2: #f2f2f7;
-    --border: rgba(0, 0, 0, 0.09);
-    --text: #000000;
-    --text2: #3c3c43;
-    --text3: #8e8e93;
-  }
 }
 
 html,

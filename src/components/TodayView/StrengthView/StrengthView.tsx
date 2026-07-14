@@ -72,8 +72,7 @@ export default function StrengthView({ day, fd, setFd, completed, deload, prevSe
   const loggedSets = displayExercises.reduce((sum, ex) => {
     let n = 0
     for (let s = 0; s < ex.sets; s++) {
-      const v = fd[ex.id]?.[s]
-      if (ex.wt ? v?.weight : v?.reps) n++
+      if (fd[ex.id]?.[s]?.logged) n++
     }
     return sum + n
   }, 0)
@@ -122,8 +121,23 @@ export default function StrengthView({ day, fd, setFd, completed, deload, prevSe
     const prevSet = prevSession?.exercises?.[exId]?.sets?.[setIdx]
     const current = fd[exId]?.[setIdx] ?? { weight: '', reps: '' }
     const { weight, reps } = resolveSetTarget(current, target, prevSet, ex.target)
-    if (ex.wt && !current.weight && weight) handleChange(exId, setIdx, 'weight', weight)
-    if (!current.reps && reps) handleChange(exId, setIdx, 'reps', reps)
+    // Commit any unfilled placeholder values AND flip `logged` in a single
+    // state update — this ✓ tap is the only thing that marks the set done.
+    setFd((prev) => {
+      const existing = prev[exId]?.[setIdx] ?? { weight: '', reps: '' }
+      return {
+        ...prev,
+        [exId]: {
+          ...prev[exId],
+          [setIdx]: {
+            ...existing,
+            weight: ex.wt && !existing.weight && weight ? weight : existing.weight,
+            reps: !existing.reps && reps ? reps : existing.reps,
+            logged: true,
+          },
+        },
+      }
+    })
     onTimerStart()
   }
 

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { BodyweightEntry, UserSettings, WorkoutSession } from '../../types'
 import { EXERCISES } from '../../data/exercises'
-import { computeStreak, exerciseTrend, findPRs, sessionVolume } from '../../engine'
+import { computeStreak, computeDayStreak, exerciseTrend, findPRs, sessionVolume } from '../../engine'
 import { dateStr, getWeekStartDate, todayStr } from '../../utils'
 import styles from './ProgressView.module.css'
 
@@ -51,7 +51,8 @@ export default function ProgressView({ sessions, hasMore, onLoadMore, settings, 
   const completed = useMemo(() => sessions.filter((s) => s.completed), [sessions])
 
   // ── Stats tiles ────────────────────────────────────────────────────────
-  const streak = useMemo(() => computeStreak(sessions, settings), [sessions, settings])
+  const dayStreak = useMemo(() => computeDayStreak(sessions, settings), [sessions, settings])
+  const weekStreak = useMemo(() => computeStreak(sessions, settings), [sessions, settings])
   const thisMonth = todayStr().slice(0, 7)
   const workoutsThisMonth = completed.filter((s) => s.date.startsWith(thisMonth)).length
   const totalVolume = useMemo(
@@ -118,7 +119,8 @@ export default function ProgressView({ sessions, hasMore, onLoadMore, settings, 
       <div className="pg-title">Progress</div>
 
       <div className={styles.statGrid}>
-        <div className={styles.sTile}><span className="num">🔥 {streak}</span><label>wk streak</label></div>
+        <div className={styles.sTile}><span className="num">🔥 {dayStreak}</span><label>day streak</label></div>
+        <div className={styles.sTile}><span className="num">{weekStreak}</span><label>wk streak</label></div>
         <div className={styles.sTile}><span className="num">{workoutsThisMonth}</span><label>this month</label></div>
         <div className={styles.sTile}><span className="num">{totalVolume >= 1000 ? `${Math.round(totalVolume / 1000)}k` : totalVolume}</span><label>lbs lifted</label></div>
         <div className={styles.sTile}><span className="num" style={{ color: 'var(--accent)' }}>{prCount}</span><label>PRs</label></div>

@@ -1,5 +1,5 @@
 import { WorkoutSession, UserSettings } from '../../types'
-import { findPRs, computeStreak, sessionVolume, sessionSetsLogged } from '../../engine'
+import { findPRs, computeStreak, computeDayStreak, sessionVolume, sessionSetsLogged } from '../../engine'
 import { EXERCISES } from '../../data/exercises'
 import styles from './SummarySheet.module.css'
 
@@ -37,7 +37,9 @@ export default function SummarySheet({ session, priorSessions, prevSameSession, 
   const volume = sessionVolume(session)
   const setsLogged = sessionSetsLogged(session)
   const beats = countBeats(session, prevSameSession)
-  const streak = computeStreak([session, ...priorSessions], settings)
+  const allSessions = [session, ...priorSessions]
+  const dayStreak = computeDayStreak(allSessions, settings)
+  const weekStreak = computeStreak(allSessions, settings)
   const prs = findPRs(session, priorSessions)
 
   const dateLabel = new Date(session.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -51,12 +53,20 @@ export default function SummarySheet({ session, priorSessions, prevSameSession, 
           <div className={styles.sub}>{dateLabel}{elapsedMinutes > 0 ? ` · ${elapsedMinutes} min` : ''}</div>
 
           {session.type === 'strength' && (
-            <div className={styles.tiles}>
-              <div className={styles.tile}><span className={`num ${styles.tileNum}`}>{volume.toLocaleString()}</span><label>lbs total volume</label></div>
-              <div className={styles.tile}><span className={`num ${styles.tileNum}`}>{setsLogged}</span><label>sets logged</label></div>
-              <div className={styles.tile}><span className={`num ${styles.tileNum}`} style={{ color: 'var(--success)' }}>{beats}</span><label>sets beat last time</label></div>
-              <div className={styles.tile}><span className={`num ${styles.tileNum}`}>🔥 {streak}</span><label>week streak</label></div>
-            </div>
+            <>
+              <div className={styles.tiles}>
+                <div className={styles.tile}><span className={`num ${styles.tileNum}`}>{volume.toLocaleString()}</span><label>lbs total volume</label></div>
+                <div className={styles.tile}><span className={`num ${styles.tileNum}`}>{setsLogged}</span><label>sets logged</label></div>
+                <div className={styles.tile}><span className={`num ${styles.tileNum}`} style={{ color: 'var(--success)' }}>{beats}</span><label>sets beat last time</label></div>
+                <div className={styles.tile}>
+                  <span className={`num ${styles.tileNum}`}>🔥 {dayStreak}</span>
+                  <label>day streak{weekStreak > 0 ? ` · ${weekStreak} wk` : ''}</label>
+                </div>
+              </div>
+              <p className={styles.hint}>
+                <b>Total volume</b> is every set's weight × reps added up — a single number for how much you moved today.
+              </p>
+            </>
           )}
 
           {prs.map((pr) => {
@@ -71,6 +81,12 @@ export default function SummarySheet({ session, priorSessions, prevSameSession, 
               </div>
             )
           })}
+
+          {prs.length > 0 && (
+            <p className={styles.hint}>
+              <b>Estimated 1-rep max</b> is a projection, not a lift you did — doing more reps at a weight implies you could lift more for a single rep (e.g. 25 lbs × 12 ≈ 35 lbs once).
+            </p>
+          )}
 
           {deload && <div className={styles.deloadNote}>Deload week banked — recovery is part of the plan.</div>}
 
