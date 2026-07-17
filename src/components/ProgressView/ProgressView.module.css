@@ -1,6 +1,10 @@
 .statGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* minmax(0, 1fr), NOT 1fr: a bare 1fr track can't shrink below its content's
+     min-width, so on narrow phones five tiles would push the grid wider than
+     the screen and overflow the whole app horizontally. minmax(0,…) lets the
+     tracks shrink to fit. */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
   margin-bottom: 14px;
 }
@@ -9,11 +13,13 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  padding: 10px 6px;
+  padding: 10px 4px;
   text-align: center;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.sTile .num { font-size: 17px; display: block; }
+.sTile .num { font-size: 16px; display: block; white-space: nowrap; }
 
 .sTile label {
   font-size: 9px;

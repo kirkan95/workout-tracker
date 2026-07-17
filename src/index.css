@@ -132,6 +132,10 @@ body {
 .main {
   flex: 1;
   overflow-y: auto;
+  /* The app is a single vertical column — nothing should ever scroll sideways.
+     Clipping horizontally is a safety net so a too-wide child can't overflow
+     the whole app. */
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding: 20px 16px;
   padding-bottom: calc(var(--nav-h) + var(--safe-b) + 24px);

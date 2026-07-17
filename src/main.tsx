@@ -22,7 +22,15 @@ const setVh = () => {
 window.addEventListener('resize', setVh)
 window.addEventListener('orientationchange', () => setTimeout(setVh, 200))
 window.visualViewport?.addEventListener('resize', setVh)
+// iOS reports a stale viewport height at module-eval time (before the browser
+// chrome/safe areas settle), so the app rendered short until a resize — e.g.
+// rotating the device — corrected it. Re-measure once things have painted and
+// on the load/pageshow lifecycle so the first render is already full-height.
 setVh()
+requestAnimationFrame(setVh)
+window.addEventListener('load', setVh)
+window.addEventListener('pageshow', setVh)
+setTimeout(setVh, 300)
 
 // ── TYPESCRIPT CONCEPT: Non-null assertion (!) ────────────────────────────────
 // getElementById returns "HTMLElement | null" because the element might not exist.
